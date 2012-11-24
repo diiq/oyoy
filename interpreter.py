@@ -13,7 +13,7 @@ def eval(code, env):
 
         new_env = dict(function.bindings)
         for arg in function.args:
-            new_env[arg.name] = eval_arg(arg, code.__dict__[arg.name], env)
+            new_env[arg.name] = eval_arg(arg, code.args[arg.name], env)
 
         return apply_fn(function, new_env)
         
@@ -46,35 +46,57 @@ def apply_fn(function, env):
 # function call, like you see below. Should perhaps be replaced by
 # separate classes, but those are so *verbose*...
 
-class Code(object):
-    def __init__(self, type, **kwargs):
+class Atom(object):
+    def __init__(self, typ, value):
         self.type = typ
-        for k, v in kwargs.iteritems():
-            self.__dict__[k] = v
+        self.value = value
 
-def Arg(name, code=False):
-    return Code("arg", name=name, code=code)
+class Arg(object):
+    def __init__(self, name):
+        self.type = "arg"
+        self.name = name
+        self.code = False
 
-def Builtin(function, args):
-    return Code("builtin", function=function, args=args)
+class Call(object):
+    def __init__(self, call, kwargs):
+        self.type = "call"
+        self.call = call
+        self.args = kwargs
 
-def Atom(typ, value):
-    return Code(type, value=value)
+class Lambda(object):
+    def __init__(self, args, body, env):
+        self.type = "lambda"
+        self.args = args
+        self.body = body
+        self.bindings = env
 
-def Call(call, **kwargs):
-    return Code("call", **kwargs)
-
-def Lambda(args, body, env):
-    return Code("lambda", args=args, body=body, bindings=env)
+class Builtin(object):
+    def __init__(self, function, args):
+        self.type = "builtin"
+        self.args = args
+        self.function = function
+        self.bindings = {}
 
 def builtin_plus(env):
     x = env["x"].value
     y = env["y"].value
     return Atom("number", x+y)
     
-plus = Builtin(builtin_plus, [Arg("x"), Arg("y")], {})
-testcode = Call(plus, x=Atom("number", 2), y=Atom("number", 3))
-testcode = Call(plus, x=Atom("number", 2), y=Call(plus, x=Atom("number", 3), y=Atom("number", 5)))
-print eval(testcode, {})
+plus = Builtin(builtin_plus, [Arg("x"), Arg("y")])
 
 
+def entry_point(argv):
+    #    testcode = Call(plus, x=Atom("number", 2), y=Atom("number", 3))
+    testcode = Call(plus, 
+                    {"x" : Atom("number", 2), 
+                     "y" : Call(plus, 
+                             {"x" : Atom("number", 3), 
+                              "y" : Atom("number", 5)})})
+    print eval(testcode, {}).value
+    return 0
+    
+def target(*args):
+    return entry_point, None
+
+if __name__ == "__main__":
+    entry_point("")
