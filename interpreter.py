@@ -7,39 +7,41 @@ An interpreter for a code-as-object version of Oyster, as opposed to code-as-lis
 current = ""
 
 def eval(code, env):
-    print(code)
+    # Function call
     if isinstance(code, Call):
         
         function = eval(code.call, env)
 
+        # Evaluate arguments
         new_env = copy_env(function.bindings)
         for arg in function.lambda_list:
             new_env[arg.name] = eval_arg(arg, code.args[arg.name], env)
 
+        # If it's a built-in, apply it
         if isinstance(function, Builtin):
             return function.function(new_env)
 
+        # if it's user-defined, execute the body
         elif isinstance(function, Lambda):
-            # assert isinstance(function.body, list)
-            ret = Symbol("Fail")
+            ret = FAIL
             for c in function.body:
-                assert isinstance(c, OyO)
                 ret = eval(c, new_env)
             return ret
 
         else:
-            return Symbol("Fail")
-        
-    elif ( isinstance(code, Builtin) or
-           isinstance(code, Number)
-           ):
+            return FAIL 
+
+    # Self-valued Atom
+    elif (isinstance(code, Builtin) or
+          isinstance(code, Number)):
         return code
 
+    # Symbol
     elif isinstance(code, Symbol):
         return env[code.symbol]
 
     else:
-        return Symbol("Fail")
+        return FAIL
 
 def eval_arg(arg, code, env):
     if arg.code:
@@ -52,12 +54,8 @@ def copy_env(env):
     for k, v in env.iteritems():
         ret[k] = v
     return ret
-    
-# That's all, folks!
 
-# This is floppy, like wet spaghetti. Don't call it; wrap it in a
-# function call, like you see below. Should perhaps be replaced by
-# separate classes, but those are so *verbose*...
+# That's the whole evaluator; here are the types to go with it:
 
 class OyO(object):
     type = "oyster"
@@ -104,22 +102,28 @@ def builtin_plus(env):
     x = env["x"].number
     y = env["y"].number
     return Number(x+y)
-    
-iplus = Builtin(builtin_plus, [Arg("x"), Arg("y")])
-plus = Lambda([Arg("x"), Arg("y")], 
-              [Call(iplus, {"x":Symbol("x"), "y":Symbol("y")})], 
-              {})
+
+FAIL = Symbol("Fail")
+
+
 
 def entry_point(argv):
-    #Symbol("x")
-    #    testcode = Call(plus, x=Atom("number", 2), y=Atom("number", 3))
+    # For now, entry_point just runs a test, applying a user-defined
+    # function that wraps a built-in 'add'.
+
+    iplus = Builtin(builtin_plus, [Arg("x"), Arg("y")])
+
+    plus = Lambda([Arg("x"), Arg("y")], 
+                  [Call(iplus, {"x":Symbol("x"), "y":Symbol("y")})], 
+                  {})
+
     testcode = Call(Symbol("+"), 
                     {"x" : Number(2), 
                      "y" : Call(Symbol("+"),
                              {"x" : Number(3), 
                               "y" : Number(5)})})
-    fail = Symbol("Fail")
-    print eval(testcode, {"Fail":fail, "+":plus}).number
+
+    print eval(testcode, {"Fail":FAIL, "+":plus}).number
     return 0
     
 def target(*args):
