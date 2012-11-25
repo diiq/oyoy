@@ -84,8 +84,6 @@ class Call(OyO):
 
 class Lambda(OyO):
     def __init__(self, args, body, env):
-        assert isinstance(body, list)
-        assert isinstance(body[0], OyO)
         self.type = "lambda"
         self.lambda_list = args
         self.body = body
