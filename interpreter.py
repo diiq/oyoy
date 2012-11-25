@@ -2,8 +2,11 @@
 An interpreter for a code-as-object version of Oyster, as opposed to code-as-list.
 """
 
+from oy_objects import *
+
+FAIL = Symbol("Fail")
+
 def eval(code, env):
-    print code
     ret = FAIL
     # Function call
     if isinstance(code, Call):
@@ -11,13 +14,13 @@ def eval(code, env):
         function = eval(code.call, env)
         
         # Evaluate arguments
-        new_env = copy_env(function.bindings)
+        new_env = function.bindings
         for arg in function.lambda_list:
             new_env[arg.name] = eval_arg(arg, code.args[arg.name], env)
 
         # If it's a built-in, apply it
         if isinstance(function, Builtin):
-            ret =function.function(new_env)
+            ret =function.function(new_env, env)
 
         # if it's user-defined, execute the body
         elif isinstance(function, Lambda):
@@ -33,7 +36,6 @@ def eval(code, env):
     elif isinstance(code, Symbol):
         ret = env[code.symbol]
 
-    print
     return ret
 
 def eval_arg(arg, code, env):
@@ -42,57 +44,12 @@ def eval_arg(arg, code, env):
     else:
         return eval(code, env)
 
-def copy_env(env):
-    ret = {}
-    for k, v in env.iteritems():
-        ret[k] = v
-    return ret
 
-# That's the whole evaluator; here are the types to go with it:
-
-class OyO(object):
-    pass
-
-class Number(OyO):
-    def __init__(self, value):
-        self.number = value
-
-class Symbol(OyO):
-    def __init__(self, value):
-        self.symbol = value
-
-class Arg(OyO):
-    def __init__(self, name, code=False):
-        self.name = name
-        self.code = code
-
-class Call(OyO):
-    def __init__(self, call, kwargs):
-        self.call = call
-        self.args = kwargs
-
-class Lambda(OyO):
-    def __init__(self, args, body, env):
-        self.lambda_list = args
-        self.body = body
-        self.bindings = env
-
-class Builtin(OyO):
-    def __init__(self, function, args, bindings={}):
-        self.function = function
-        self.lambda_list = args
-        self.bindings = bindings
-
-class List(OyO):
-    def __init__(self, items):
-        self.items = items
-
-FAIL = Symbol("Fail")
 
 def populate_globals(env):
     # Builtin *functions* take an environment, rather than individual
     # args.
-    def builtin_plus(env):
+    def builtin_plus(env, _):
         x = env["x"].number
         y = env["y"].number
         return Number(x+y)
@@ -109,10 +66,10 @@ def populate_globals(env):
 
 
     # Lambda:
-    def builtin_lambda(env):
+    def builtin_lambda(env, benv):
         args = env["args"]
         body = env["body"]
-        return Lambda(args.items, body.items, env)
+        return Lambda(args.items, body.items, benv)
 
     env["fn"] = Builtin(builtin_lambda, [Arg("args", True), Arg("body", True)])
     return env
@@ -126,7 +83,9 @@ def entry_point(argv):
     env = populate_globals({})
     make_lam = Call(Symbol("fn"),
                     {"args" : List([Arg("a"), Arg("b")]),
-                     "body" : List([Symbol("a")])})
+                     "body" : List([Call(Symbol("+"), 
+                                         {"x":Symbol("a"),
+                                          "y":Symbol("b")})])})
     testcode = Call(make_lam, 
                     {"a" : Number(2), 
                      "b" : Call(Symbol("+"),
