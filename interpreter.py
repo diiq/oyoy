@@ -54,40 +54,34 @@ def copy_env(env):
 # That's the whole evaluator; here are the types to go with it:
 
 class OyO(object):
-    type = "oyster"
+    pass
 
 class Number(OyO):
     def __init__(self, value):
-        self.type = "number"
         self.number = value
 
 class Symbol(OyO):
     def __init__(self, value):
-        self.type = "symbol"
         self.symbol = value
 
 class Arg(OyO):
     def __init__(self, name):
-        self.type = "arg"
         self.name = name
         self.code = False
 
 class Call(OyO):
     def __init__(self, call, kwargs):
-        self.type = "call"
         self.call = call
         self.args = kwargs
 
 class Lambda(OyO):
     def __init__(self, args, body, env):
-        self.type = "lambda"
         self.lambda_list = args
         self.body = body
         self.bindings = env
 
 class Builtin(OyO):
     def __init__(self, function, args):
-        self.type = "builtin"
         self.lambda_list = args
         self.function = function
         self.bindings = {}
