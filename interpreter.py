@@ -3,11 +3,13 @@ An interpreter for a code-as-object version of Oyster, as opposed to code-as-lis
 """
 
 def eval(code, env):
+    print code
+    ret = FAIL
     # Function call
     if isinstance(code, Call):
         
         function = eval(code.call, env)
-
+        
         # Evaluate arguments
         new_env = copy_env(function.bindings)
         for arg in function.lambda_list:
@@ -15,33 +17,28 @@ def eval(code, env):
 
         # If it's a built-in, apply it
         if isinstance(function, Builtin):
-            return function.function(new_env)
+            ret =function.function(new_env)
 
         # if it's user-defined, execute the body
         elif isinstance(function, Lambda):
-            ret = FAIL
             for c in function.body:
                 ret = eval(c, new_env)
-            return ret
-
-        else:
-            return FAIL 
 
     # Self-valued Atom
     elif (isinstance(code, Builtin) or
           isinstance(code, Number)):
-        return code
+        ret = code
 
     # Symbol
     elif isinstance(code, Symbol):
-        return env[code.symbol]
+        ret = env[code.symbol]
 
-    else:
-        return FAIL
+    print
+    return ret
 
 def eval_arg(arg, code, env):
     if arg.code:
-        return arg 
+        return code
     else:
         return eval(code, env)
 
@@ -65,9 +62,9 @@ class Symbol(OyO):
         self.symbol = value
 
 class Arg(OyO):
-    def __init__(self, name):
+    def __init__(self, name, code=False):
         self.name = name
-        self.code = False
+        self.code = code
 
 class Call(OyO):
     def __init__(self, call, kwargs):
@@ -81,21 +78,19 @@ class Lambda(OyO):
         self.bindings = env
 
 class Builtin(OyO):
-    def __init__(self, function, args):
-        self.lambda_list = args
+    def __init__(self, function, args, bindings={}):
         self.function = function
-        self.bindings = {}
+        self.lambda_list = args
+        self.bindings = bindings
 
+class List(OyO):
+    def __init__(self, items):
+        self.items = items
 
 FAIL = Symbol("Fail")
 
-
-
-def entry_point(argv):
-    # For now, entry_point just runs a test, applying a user-defined
-    # function that wraps a built-in addition function.
-
-    # Builtin functions take an environment, rather than individual
+def populate_globals(env):
+    # Builtin *functions* take an environment, rather than individual
     # args.
     def builtin_plus(env):
         x = env["x"].number
@@ -105,20 +100,40 @@ def entry_point(argv):
     # Builtin *objects* have arglists, though.
     iplus = Builtin(builtin_plus, [Arg("x"), Arg("y")])
 
+    env["builtin+"] = iplus
+    
     # And lambda objects have an environtment to close over.
-    plus = Lambda([Arg("x"), Arg("y")], 
-                  [Call(iplus, {"x":Symbol("x"), "y":Symbol("y")})], 
-                  {}) # <-- environment
+    env["+"] = Lambda([Arg("x"), Arg("y")], 
+                      [Call(iplus, {"x":Symbol("x"), "y":Symbol("y")})], 
+                      {}) # <-- environment
+
+
+    # Lambda:
+    def builtin_lambda(env):
+        args = env["args"]
+        body = env["body"]
+        return Lambda(args.items, body.items, env)
+
+    env["fn"] = Builtin(builtin_lambda, [Arg("args", True), Arg("body", True)])
+    return env
+
+def entry_point(argv):
+    # For now, entry_point just runs a test, applying a user-defined
+    # function that wraps a built-in addition function.
 
     # A call takes a dictionary of arguments; all args are keyword
     # args.
-    testcode = Call(Symbol("+"), 
-                    {"x" : Number(2), 
-                     "y" : Call(Symbol("+"),
+    env = populate_globals({})
+    make_lam = Call(Symbol("fn"),
+                    {"args" : List([Arg("a"), Arg("b")]),
+                     "body" : List([Symbol("a")])})
+    testcode = Call(make_lam, 
+                    {"a" : Number(2), 
+                     "b" : Call(Symbol("+"),
                              {"x" : Number(3), 
                               "y" : Number(5)})})
 
-    print eval(testcode, {"Fail":FAIL, "+":plus}).number
+    print eval(testcode, env).number
     return 0
     
 def target(*args):
