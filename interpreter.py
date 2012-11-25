@@ -86,10 +86,6 @@ class Builtin(OyO):
         self.function = function
         self.bindings = {}
 
-def builtin_plus(env):
-    x = env["x"].number
-    y = env["y"].number
-    return Number(x+y)
 
 FAIL = Symbol("Fail")
 
@@ -97,14 +93,25 @@ FAIL = Symbol("Fail")
 
 def entry_point(argv):
     # For now, entry_point just runs a test, applying a user-defined
-    # function that wraps a built-in 'add'.
+    # function that wraps a built-in addition function.
 
+    # Builtin functions take an environment, rather than individual
+    # args.
+    def builtin_plus(env):
+        x = env["x"].number
+        y = env["y"].number
+        return Number(x+y)
+
+    # Builtin *objects* have arglists, though.
     iplus = Builtin(builtin_plus, [Arg("x"), Arg("y")])
 
+    # And lambda objects have an environtment to close over.
     plus = Lambda([Arg("x"), Arg("y")], 
                   [Call(iplus, {"x":Symbol("x"), "y":Symbol("y")})], 
-                  {})
+                  {}) # <-- environment
 
+    # A call takes a dictionary of arguments; all args are keyword
+    # args.
     testcode = Call(Symbol("+"), 
                     {"x" : Number(2), 
                      "y" : Call(Symbol("+"),
