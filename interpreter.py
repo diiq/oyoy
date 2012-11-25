@@ -1,10 +1,6 @@
 """
 An interpreter for a code-as-object version of Oyster, as opposed to code-as-list.
 """
-# builtin functions take an environment as an argument; okie?
-# types: builtin call number symbol etc
-
-current = ""
 
 def eval(code, env):
     # Function call
