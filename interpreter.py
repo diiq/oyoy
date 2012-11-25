@@ -7,98 +7,119 @@ An interpreter for a code-as-object version of Oyster, as opposed to code-as-lis
 current = ""
 
 def eval(code, env):
-    if code["type"] == "call":
+    print(code)
+    if isinstance(code, Call):
         
-        function = eval(code["call"], env)
+        function = eval(code.call, env)
 
-        new_env = dict(function["bindings"])
-        for arg in function["args"]:
-            new_env[arg["name"]] = eval_arg(arg, code["args"][arg["name"]], env)
+        new_env = copy_env(function.bindings)
+        for arg in function.lambda_list:
+            new_env[arg.name] = eval_arg(arg, code.args[arg.name], env)
 
-        return apply_fn(function, new_env)
+        if isinstance(function, Builtin):
+            return function.function(new_env)
+
+        elif isinstance(function, Lambda):
+            # assert isinstance(function.body, list)
+            ret = Symbol("Fail")
+            for c in function.body:
+                assert isinstance(c, OyO)
+                ret = eval(c, new_env)
+            return ret
+
+        else:
+            return Symbol("Fail")
         
-    elif (code["type"] == "builtin" or
-          code["type"] == "number"):
+    elif ( isinstance(code, Builtin) or
+           isinstance(code, Number)
+           ):
         return code
 
-    elif code["type"] == "symbol":
-        return lookup(env, code)
+    elif isinstance(code, Symbol):
+        return env[code.symbol]
+
+    else:
+        return Symbol("Fail")
 
 def eval_arg(arg, code, env):
-    if arg["code"]:
+    if arg.code:
         return arg 
     else:
         return eval(code, env)
 
-def lookup(env, symbol):
-    return env[symbol["id"]]
-
-def apply_fn(function, env):
-    if function["type"] == "builtin":
-        return function["function"](env)
-    else:
-        return eval(function["body"], env)
-
-
+def copy_env(env):
+    ret = {}
+    for k, v in env.iteritems():
+        ret[k] = v
+    return ret
+    
 # That's all, folks!
 
 # This is floppy, like wet spaghetti. Don't call it; wrap it in a
 # function call, like you see below. Should perhaps be replaced by
 # separate classes, but those are so *verbose*...
 
+class OyO(object):
+    type = "oyster"
 
-def Atom(typ, value):
-    self = {}
-    self["type"] = typ
-    self["value"] = value
-    return self
-    
-def Arg(name):
-    self = {}
-    self["type"] = "arg"
-    self["name"] = name
-    self["code"] = False
-    return self
-    
-def Call(call, kwargs):
-    self = {}
-    self["type"] = "call"
-    self["call"] = call
-    self["args"] = kwargs
-    return self
-    
-def Lambda(args, body, env):
-    self = {}
-    self["type"] = "lambda"
-    self["args"] = args
-    self["body"] = body
-    self["bindings"] = env
-    return self
-    
-def Builtin(function, args):
-    self = {}
-    self["type"] = "builtin"
-    self["args"] = args
-    self["function"] = function
-    self["bindings"] = {}
-    return self
-    
+class Number(OyO):
+    def __init__(self, value):
+        self.type = "number"
+        self.number = value
+
+class Symbol(OyO):
+    def __init__(self, value):
+        self.type = "symbol"
+        self.symbol = value
+
+class Arg(OyO):
+    def __init__(self, name):
+        self.type = "arg"
+        self.name = name
+        self.code = False
+
+class Call(OyO):
+    def __init__(self, call, kwargs):
+        self.type = "call"
+        self.call = call
+        self.args = kwargs
+
+class Lambda(OyO):
+    def __init__(self, args, body, env):
+        assert isinstance(body, list)
+        assert isinstance(body[0], OyO)
+        self.type = "lambda"
+        self.lambda_list = args
+        self.body = body
+        self.bindings = env
+
+class Builtin(OyO):
+    def __init__(self, function, args):
+        self.type = "builtin"
+        self.lambda_list = args
+        self.function = function
+        self.bindings = {}
+
 def builtin_plus(env):
-    x = env["x"]["value"]
-    y = env["y"]["value"]
-    return Atom("number", x+y)
+    x = env["x"].number
+    y = env["y"].number
+    return Number(x+y)
     
-plus = Builtin(builtin_plus, [Arg("x"), Arg("y")])
-
+iplus = Builtin(builtin_plus, [Arg("x"), Arg("y")])
+plus = Lambda([Arg("x"), Arg("y")], 
+              [Call(iplus, {"x":Symbol("x"), "y":Symbol("y")})], 
+              {})
 
 def entry_point(argv):
+    #Symbol("x")
     #    testcode = Call(plus, x=Atom("number", 2), y=Atom("number", 3))
-    testcode = Call(plus, 
-                    {"x" : Atom("number", 2), 
-                     "y" : Call(plus, 
-                             {"x" : Atom("number", 3), 
-                              "y" : Atom("number", 5)})})
-    print eval(testcode, {})["value"]
+    testcode = Call(Symbol("+"), 
+                    {"x" : Number(2), 
+                     "y" : Call(Symbol("+"),
+                             {"x" : Number(3), 
+                              "y" : Number(5)})})
+    fail = Symbol("Fail")
+    print eval(testcode, {"Fail":fail, "+":plus}).number
     return 0
     
 def target(*args):
