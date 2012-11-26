@@ -5,9 +5,9 @@ This particular project is an attempt at producting an interpreter for
 Oyster in RPython, for translation and JIT-generation by pypy.
 
 This go-round, rather than using a single data structure
-(closure-wrapped cons cells) and attempting to render every aspect of
-a program with it, I'm playing with a much richer AST -- rendering
-code textually in JSON, and putting a much, much greater load on the
+(closure-wrapped cons cells) and attempting to describe every aspect of
+a program with it, I'm playing with a much richer AST -- storing
+code in a metadata-rich format, and putting a much, much greater expectaton on the
 IDE to render the right information at the right time.
 
 Because I'm just playing around, the best way to learn what I'm doing,
