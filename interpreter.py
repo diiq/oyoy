@@ -2,6 +2,8 @@
 An interpreter for a code-as-object version of Oyster, as opposed to code-as-list.
 """
 
+from environment import Env
+
 class OyO(object):
     pass
 
@@ -30,10 +32,10 @@ class Lambda(OyO):
         self.bindings = env
 
 class Builtin(OyO):
-    def __init__(self, function, args, bindings={}):
+    def __init__(self, function, args):
         self.function = function
         self.lambda_list = args
-        self.bindings = bindings
+        self.bindings = Env(None, None)
 
 class List(OyO):
     def __init__(self, items):
@@ -58,7 +60,7 @@ def eval(code, env):
 
     # Symbol
     elif isinstance(code, Symbol):
-        ret = env[code.symbol][0]
+        ret = env.lookup(code.symbol)
 
     return ret
 
@@ -69,13 +71,13 @@ def eval_call(code, env):
     function = eval(code.call, env)
 
     # Evaluate arguments
-    new_env = function.bindings
+    new_env = Env(function.bindings, env)
     for arg in function.lambda_list:
-        new_env[arg.name] = [eval_arg(arg, code.args[arg.name], env)]
+        new_env.set(arg.name, eval_arg(arg, code.args[arg.name], env))
 
         # If it's a built-in, apply it
     if isinstance(function, Builtin):
-        ret =function.function(new_env, env)
+        ret = function.function(new_env)
 
         # if it's user-defined, execute the body
     elif isinstance(function, Lambda):
@@ -95,30 +97,32 @@ def eval_arg(arg, code, env):
 def populate_globals(env):
     # Builtin *functions* take an environment, rather than individual
     # args.
-    def builtin_plus(env, _):
-        x = env["x"][0].number
-        y = env["y"][0].number
+    def builtin_plus(env):
+        x = env.lookup("x").number
+        y = env.lookup("y").number
         return Number(x+y)
 
     # Builtin *objects* have arglists, though.
     iplus = Builtin(builtin_plus, [Arg("x"), Arg("y")])
 
-    env["builtin+"] = iplus
+    env.set("builtin+", iplus)
     
     # And lambda objects have an environtment to close over.
-    env["+"] = [Lambda([Arg("x"), Arg("y")], 
-                      [Call(iplus, {"x":Symbol("x"), "y":Symbol("y")})], 
-                      {})] # <-- environment
+    env.set("+", Lambda([Arg("x"), Arg("y")], 
+                        [Call(iplus, {"x":Symbol("x"), "y":Symbol("y")})], 
+                        Env(None, None))) # <-- environment
 
 
     # Lambda:
-    def builtin_lambda(env, benv):
-        args = env["args"][0]
-        body = env["body"][0]
-        return Lambda(args.items, body.items, benv)
+    def builtin_lambda(env):
+        args = env.lookup("args")
+        body = env.lookup("body")
+        return Lambda(args.items, body.items, env.dynamic)
 
-    env["fn"] = [Builtin(builtin_lambda, [Arg("args", True), Arg("body", True)])]
+    env.set("fn", Builtin(builtin_lambda, [Arg("args", True), Arg("body", True)]))
+
     return env
+    
 
 def entry_point(argv):
     # For now, entry_point just runs a test, applying a user-defined
@@ -126,7 +130,8 @@ def entry_point(argv):
 
     # A call takes a dictionary of arguments; all args are keyword
     # args.
-    env = populate_globals({})
+    env = populate_globals(Env(None, None))
+    
     make_lam = Call(Symbol("fn"),
                     {"args" : List([Arg("a"), Arg("b")]),
                      "body" : List([Call(Symbol("+"), 
