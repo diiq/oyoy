@@ -39,8 +39,9 @@ class List(OyO):
     def __init__(self, items):
         self.items = items
 
-#class Frame():
-#    def __init__(self,  
+class Frame():
+    def __init__(self, instructions, env):
+        pass
         
 FAIL = Symbol("Fail")
 
@@ -48,23 +49,8 @@ def eval(code, env):
     ret = FAIL
     # Function call
     if isinstance(code, Call):
-        
-        function = eval(code.call, env)
-        
-        # Evaluate arguments
-        new_env = function.bindings
-        for arg in function.lambda_list:
-            new_env[arg.name] = [eval_arg(arg, code.args[arg.name], env)]
-
-        # If it's a built-in, apply it
-        if isinstance(function, Builtin):
-            ret =function.function(new_env, env)
-
-        # if it's user-defined, execute the body
-        elif isinstance(function, Lambda):
-            for c in function.body:
-                ret = eval(c, new_env)
-
+        ret = eval_call(code, env)
+    
     # Self-valued Atom
     elif (isinstance(code, Builtin) or
           isinstance(code, Number)):
@@ -76,6 +62,28 @@ def eval(code, env):
 
     return ret
 
+    
+def eval_call(code, env):
+    ret = FAIL
+
+    function = eval(code.call, env)
+
+    # Evaluate arguments
+    new_env = function.bindings
+    for arg in function.lambda_list:
+        new_env[arg.name] = [eval_arg(arg, code.args[arg.name], env)]
+
+        # If it's a built-in, apply it
+    if isinstance(function, Builtin):
+        ret =function.function(new_env, env)
+
+        # if it's user-defined, execute the body
+    elif isinstance(function, Lambda):
+        for c in function.body:
+            ret = eval(c, new_env)
+            
+    return ret
+            
 def eval_arg(arg, code, env):
     if arg.code:
         return code
