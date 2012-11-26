@@ -39,6 +39,8 @@ class List(OyO):
     def __init__(self, items):
         self.items = items
 
+#class Frame():
+#    def __init__(self,  
         
 FAIL = Symbol("Fail")
 
@@ -52,7 +54,7 @@ def eval(code, env):
         # Evaluate arguments
         new_env = function.bindings
         for arg in function.lambda_list:
-            new_env[arg.name] = eval_arg(arg, code.args[arg.name], env)
+            new_env[arg.name] = [eval_arg(arg, code.args[arg.name], env)]
 
         # If it's a built-in, apply it
         if isinstance(function, Builtin):
@@ -70,7 +72,7 @@ def eval(code, env):
 
     # Symbol
     elif isinstance(code, Symbol):
-        ret = env[code.symbol]
+        ret = env[code.symbol][0]
 
     return ret
 
@@ -86,8 +88,8 @@ def populate_globals(env):
     # Builtin *functions* take an environment, rather than individual
     # args.
     def builtin_plus(env, _):
-        x = env["x"].number
-        y = env["y"].number
+        x = env["x"][0].number
+        y = env["y"][0].number
         return Number(x+y)
 
     # Builtin *objects* have arglists, though.
@@ -96,18 +98,18 @@ def populate_globals(env):
     env["builtin+"] = iplus
     
     # And lambda objects have an environtment to close over.
-    env["+"] = Lambda([Arg("x"), Arg("y")], 
+    env["+"] = [Lambda([Arg("x"), Arg("y")], 
                       [Call(iplus, {"x":Symbol("x"), "y":Symbol("y")})], 
-                      {}) # <-- environment
+                      {})] # <-- environment
 
 
     # Lambda:
     def builtin_lambda(env, benv):
-        args = env["args"]
-        body = env["body"]
+        args = env["args"][0]
+        body = env["body"][0]
         return Lambda(args.items, body.items, benv)
 
-    env["fn"] = Builtin(builtin_lambda, [Arg("args", True), Arg("body", True)])
+    env["fn"] = [Builtin(builtin_lambda, [Arg("args", True), Arg("body", True)])]
     return env
 
 def entry_point(argv):
