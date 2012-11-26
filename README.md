@@ -13,5 +13,5 @@ IDE to render the right information at the right time.
 Because I'm just playing around, the best way to learn what I'm doing,
 and what you can do, is to send me an email: [s@diiq.org](mailto:s@diiq.org)
 
-You can also check out [on oyster](oyster.diiq.org), my blog about
+You can also check out [on oyster](http://oyster.diiq.org), my blog about
 writing artisanal lisps. 
