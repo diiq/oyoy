@@ -76,5 +76,7 @@ def test_env():
     assert local.lookup("g") == 20
     assert lexical.active["g"] == 20
 
-test_env()
+
+if __name__ == "__main__":
+    test_env()
     
