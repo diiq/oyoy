@@ -20,6 +20,7 @@ analysis.
 
 
 class Env():
+    LEAK, ALTER = range(2) 
     def __init__(self, lexical, dynamic):
         self.active = {} # active is where local variables are set
         self.lexical = lexical # the lexical environment
@@ -28,15 +29,15 @@ class Env():
         
     def set(self, symbol, value):
         if symbol in self.leaks:
-            if self.leaks[symbol] == "leak":
+            if self.leaks[symbol] == Env.LEAK:
                 self.dynamic.set(symbol, value)
-            elif self.leaks[symbol] == "alter":
+            elif self.leaks[symbol] == Env.ALTER:
                 self.lexical.set(symbol, value)
         else:
             self.active[symbol] = value
             
     def lookup(self, symbol):
-        if symbol in self.leaks and self.leaks[symbol] == "leak":
+        if symbol in self.leaks and self.leaks[symbol] == Env.LEAK:
             return self.dynamic.lookup(symbol)
         if symbol in self.active:
             return self.active[symbol]
@@ -46,10 +47,10 @@ class Env():
             raise LookupError, symbol 
 
     def leak(self, symbol):
-        self.leaks[symbol] = "leak"
+        self.leaks[symbol] = Env.LEAK
 
     def alter(self, symbol):
-        self.leaks[symbol] = "alter"
+        self.leaks[symbol] = Env.ALTER
 
         
 def test_env():

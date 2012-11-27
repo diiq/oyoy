@@ -2,6 +2,8 @@ from environment import Env
 
 class OyO(object):
     pass
+#def __str__(self):
+#       return str(self.__dict__)
 
 class Number(OyO):
     def __init__(self, value):
