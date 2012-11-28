@@ -1,5 +1,5 @@
 Oyster is a programming language. It's heavily lisp-influenced (though
-it becomes less lisp-like with each iteration in it's production).
+it becomes less lisp-like with each iteration in its production).
 
 This particular project is an attempt at producting an interpreter for
 Oyster in RPython, for translation and JIT-generation by pypy.

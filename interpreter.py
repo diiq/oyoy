@@ -137,6 +137,17 @@ def populate_globals(env):
 
     env.set("fn", Builtin(builtin_lambda, [Arg("args", True), Arg("body", True)]))
 
+
+    
+    # Lambda:
+    def builtin_set(env):
+        sym = env.lookup("symbol")
+        val = env.lookup("value")
+        env.dynamic.set(sym.symbol, val)
+        return val
+
+    env.set("set", Builtin(builtin_set, [Arg("symbol", True), Arg("value")]))
+
     return env
     
 
@@ -153,14 +164,18 @@ def entry_point(argv):
                      "body" : List([Call(Symbol("+"), 
                                          {"x":Symbol("a"),
                                           "y":Symbol("b")})])})
-    testcode = Call(make_lam, 
+    setter = Call(Symbol("set"), 
+                  {"symbol" : Symbol("my-plus"),
+                   "value" : make_lam})
+    testcode = Call(Symbol("my-plus"), 
                     {"a" : Number(2), 
                      "b" : Call(Symbol("+"),
                              {"x" : Number(3), 
                               "y" : Number(5)})})
 
-    ins = Instruction(Instruction.CODE, testcode)
-    stack = [Frame([ins], env)]
+    ins = [Instruction(Instruction.CODE, testcode),
+           Instruction(Instruction.CODE, setter)]
+    stack = [Frame(ins, env)]
     cur = None
     #    try:
     while stack:
