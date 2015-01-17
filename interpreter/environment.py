@@ -22,28 +22,28 @@ analysis.
 class Env():
     LEAK, ALTER = range(2)
 
-    def __init__(self, lexical, dynamic):
-        self.active = {}
-        self.lexical = lexical
-        self.dynamic = dynamic
+    def __init__(self, lexical_environment, calling_environment):
+        self.this_environment = {}
+        self.lexical_environment = lexical_environment
+        self.calling_environment = calling_environment
         self.leaks = {}
 
     def set(self, symbol, value):
         if symbol in self.leaks:
             if self.leaks[symbol] == Env.LEAK:
-                self.dynamic.set(symbol, value)
+                self.calling_environment.set(symbol, value)
             elif self.leaks[symbol] == Env.ALTER:
-                self.lexical.set(symbol, value)
+                self.lexical_environment.set(symbol, value)
         else:
-            self.active[symbol] = value
+            self.this_environment[symbol] = value
 
     def lookup(self, symbol):
         if symbol in self.leaks and self.leaks[symbol] == Env.LEAK:
-            return self.dynamic.lookup(symbol)
-        if symbol in self.active:
-            return self.active[symbol]
-        elif self.lexical:
-            return self.lexical.lookup(symbol)
+            return self.calling_environment.lookup(symbol)
+        if symbol in self.this_environment:
+            return self.this_environment[symbol]
+        elif self.lexical_environment:
+            return self.lexical_environment.lookup(symbol)
         else:
             raise LookupError(symbol)
 

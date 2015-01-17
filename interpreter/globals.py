@@ -23,7 +23,7 @@ def populate_globals(env):
     def builtin_lambda(env):
         args = env.lookup("args")
         body = env.lookup("body")
-        return Lambda(args.items, body.items, env.dynamic)
+        return Lambda(args.items, body.items, env.calling_environment)
 
     env.set("fn",
             Builtin(builtin_lambda, [Arg("args", True),
@@ -33,7 +33,7 @@ def populate_globals(env):
     def builtin_set(env):
         sym = env.lookup("symbol")
         val = env.lookup("value")
-        env.dynamic.set(sym.symbol, val)
+        env.calling_environment.set(sym.symbol, val)
         return val
 
     env.set("set", Builtin(builtin_set, [Arg("symbol", True), Arg("value")]))
