@@ -1,0 +1,7 @@
+honcho
+fabric
+ipython
+sniffer
+MacFSEvents
+rednose
+flake8
