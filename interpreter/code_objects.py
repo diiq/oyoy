@@ -12,6 +12,7 @@ class Number(OyO):
 
 class Symbol(OyO):
     code = False
+
     def __init__(self, value):
         self.symbol = value
 

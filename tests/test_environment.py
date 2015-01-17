@@ -1,6 +1,7 @@
 from test_case import TestCase
 from interpreter.environment import Env
 
+
 class EnvironmentTests(TestCase):
     def setUp(self):
         self.lexical_environment = Env(None, None)

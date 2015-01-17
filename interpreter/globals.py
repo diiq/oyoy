@@ -36,6 +36,7 @@ def populate_globals(env):
         env.calling_environment.set(sym.symbol, val)
         return val
 
-    env.set("set", Builtin(builtin_set, [Arg("symbol", True), Symbol("value")]))
+    env.set("set", Builtin(builtin_set,
+                           [Arg("symbol", True), Symbol("value")]))
 
     return env

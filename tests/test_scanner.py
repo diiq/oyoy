@@ -14,7 +14,8 @@ class ScannerTests(TestCase):
         res = (scanner.read()[0] for i in xrange(10000))
         pairs = zip(expected, res)
         if not all([pair[0] == pair[1] for pair in pairs]):
-            raise AssertionError("Scan failed to match:\n%s" % pformat(pairs, 4))
+            raise AssertionError(
+                "Scan failed to match:\n%s" % pformat(pairs, 4))
 
     def test_symbol(self):
         file = StringIO("a-symbol")
@@ -81,11 +82,11 @@ class ScannerTests(TestCase):
         """
         file = StringIO(dedent(code))
         scanner = OysterScanner(file, "test_plus")
-        expected =  ['nodent', 'Symbol', 'Symbol', 'colon',
-                       'Symbol', 'open', 'Symbol', 'Symbol', 'close', 'colon',
-                     'indent', 'Symbol', 'Symbol', 'Symbol',
-                     'dedent', 'Symbol', 'Number',
-                       'open', 'Symbol', 'Number', 'Number', 'close',
-                     'nodent', None]
+        expected = ['nodent', 'Symbol', 'Symbol', 'colon',
+                      'Symbol', 'open', 'Symbol', 'Symbol', 'close', 'colon',
+                    'indent', 'Symbol', 'Symbol', 'Symbol',
+                    'dedent', 'Symbol', 'Number',
+                      'open', 'Symbol', 'Number', 'Number', 'close',
+                    'nodent', None]
 
         self.assertScansTo(scanner, expected)

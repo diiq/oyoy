@@ -2,7 +2,6 @@
 
 import plex
 
-from interpreter.code_objects import Symbol, Call, Number
 
 lmbda = plex.Str("λ")
 letter = plex.Range("AZaz") | lmbda
@@ -19,6 +18,7 @@ indentation = plex.Rep(plex.Str(" "))
 lineterm = plex.Str("\n") | plex.Eof
 comment = plex.Str("#") + plex.Rep(plex.AnyBut("\n"))
 blank_line = indentation + plex.Opt(comment) + lineterm
+
 
 class OysterScanner(plex.Scanner):
     def __init__(self, file, name):
@@ -75,7 +75,6 @@ class OysterScanner(plex.Scanner):
 
     def lineterm_action(self, text):
         self.begin('new_line')
-
 
     lexicon = plex.Lexicon([
         (symbol,        "Symbol"),
