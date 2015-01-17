@@ -9,12 +9,18 @@ class Number(OyO):
     def __init__(self, value):
         self.number = value
 
+    def __str__(self):
+        return "<num: %s>" % self.number
+
 
 class Symbol(OyO):
     code = False
 
     def __init__(self, value):
         self.symbol = value
+
+    def __str__(self):
+        return "<sym: %s>" % self.symbol
 
 
 class Arg(OyO):
@@ -44,5 +50,8 @@ class Builtin(OyO):
 
 
 class List(OyO):
-    def __init__(self, *items):
+    def __init__(self, items):
         self.items = items
+
+    def __str__(self):
+        return "(%s)" % ", ".join([item.__str__() for item in self.items])

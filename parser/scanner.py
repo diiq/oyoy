@@ -4,7 +4,8 @@ import plex
 
 
 lmbda = plex.Str("λ")
-letter = plex.Range("AZaz") | lmbda
+# Here's a mighty dangerous game:
+letter = plex.AnyBut("0987654321-+?!$~<>_()\t\n :")
 digit = plex.Range("09")
 valid_punctuation = plex.Any("-+?!$~<>_")
 symbol = (letter + plex.Rep(letter | digit | valid_punctuation) |
@@ -17,7 +18,7 @@ colon = plex.Str(":")
 indentation = plex.Rep(plex.Str(" "))
 lineterm = plex.Str("\n") | plex.Eof
 comment = plex.Str("#") + plex.Rep(plex.AnyBut("\n"))
-blank_line = indentation + plex.Opt(comment) + lineterm
+blank_line = indentation + plex.Opt(comment) + plex.Str("\n")
 
 
 class OysterScanner(plex.Scanner):
@@ -31,6 +32,15 @@ class OysterScanner(plex.Scanner):
         self.paren_stack = [0]
 
         plex.Scanner.__init__(self, self.lexicon, file, name)
+
+    def read_all(self):
+        res = []
+        token = self.read()
+        res.append(token)
+        while token[0]:
+            token = self.read()
+            res.append(token)
+        return res
 
     def current_level(self):
         return self.indentation_stack[-1]
@@ -77,12 +87,13 @@ class OysterScanner(plex.Scanner):
         self.begin('new_line')
 
     lexicon = plex.Lexicon([
-        (symbol,        "Symbol"),
-        (number,        "Number"),
+        (symbol,        "symbol"),
+        (number,        "number"),
         (open,          open_action),
         (close,         close_action),
         (colon,         "colon"),
         (space,         plex.IGNORE),
+        (comment,         plex.IGNORE),
         (lineterm,      lineterm_action),
         plex.State('new_line', [
             (blank_line,    plex.IGNORE),

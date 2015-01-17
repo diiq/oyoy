@@ -7,9 +7,9 @@ class AddTests(TestCase):
     def test_add(self):
 
         make_lam = Call(Symbol("fn"),
-                        [List(Symbol("a"), Symbol("b")),
-                         List(Call(Symbol("+"),
-                                   [Symbol("a"), Symbol("b")]))])
+                        [List([Symbol("a"), Symbol("b")]),
+                         List([Call(Symbol("+"),
+                                   [Symbol("a"), Symbol("b")])])])
 
         setter = Call(Symbol("set"),
                       [Symbol("my-plus"), make_lam])
