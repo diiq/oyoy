@@ -6,7 +6,6 @@ from interpreter.globals import populate_globals
 
 class TestCase(TC):
     def setUp(self):
-        print "here"
         self.env = populate_globals(Env(None, None))
 
     def run_program(self, instructions):

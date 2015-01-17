@@ -5,3 +5,4 @@ sniffer
 MacFSEvents
 rednose
 flake8
+plex>=2.0.0dev

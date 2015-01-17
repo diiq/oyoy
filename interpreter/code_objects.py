@@ -11,20 +11,21 @@ class Number(OyO):
 
 
 class Symbol(OyO):
+    code = False
     def __init__(self, value):
         self.symbol = value
 
 
 class Arg(OyO):
-    def __init__(self, name, code=False):
-        self.name = name
+    def __init__(self, symbol, code=False):
+        self.symbol = symbol
         self.code = code
 
 
 class Call(OyO):
-    def __init__(self, call, kwargs):
+    def __init__(self, call, args):
         self.call = call
-        self.args = kwargs
+        self.args = args
 
 
 class Lambda(OyO):
@@ -42,5 +43,5 @@ class Builtin(OyO):
 
 
 class List(OyO):
-    def __init__(self, items):
+    def __init__(self, *items):
         self.items = items

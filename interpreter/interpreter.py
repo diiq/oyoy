@@ -12,10 +12,10 @@ Log = []
 class Instruction():
     ARGUMENT, CODE, CALL, APPLY = range(4)
 
-    def __init__(self, typ, code=None, args=None, name=""):
+    def __init__(self, typ, code=None, args=None, symbol=""):
         self.type = typ
         self.code = code
-        self.name = name
+        self.symbol = symbol
         self.args = args
 
 
@@ -47,7 +47,7 @@ def eval(stack, current):
         return current
 
     elif instruction.type is Instruction.ARGUMENT:
-        frame.new_env.set(instruction.name, current)
+        frame.new_env.set(instruction.symbol, current)
         return current
 
     elif instruction.type is Instruction.CALL:
@@ -94,12 +94,12 @@ def eval_args(stack, function, code):
 
     frame.push(Instruction(Instruction.APPLY, function))
 
-    for arg in function.lambda_list:
+    for index, arg in enumerate(function.lambda_list):
         if arg.code:
-            frame.new_env.set(arg.name, args[arg.name])
+            frame.new_env.set(arg.symbol, args[index])
         else:
-            frame.push(Instruction(Instruction.ARGUMENT, name=arg.name))
-            frame.push(Instruction(Instruction.CODE, args[arg.name]))
+            frame.push(Instruction(Instruction.ARGUMENT, symbol=arg.symbol))
+            frame.push(Instruction(Instruction.CODE, args[index]))
 
 
 def eval_apply(stack, function):

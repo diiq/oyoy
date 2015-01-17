@@ -10,13 +10,13 @@ def populate_globals(env):
         return Number(x+y)
 
     # Builtin *objects* have arglists, though.
-    iplus = Builtin(builtin_plus, [Arg("x"), Arg("y")])
+    iplus = Builtin(builtin_plus, [Symbol("x"), Symbol("y")])
 
     env.set("builtin+", iplus)
 
     # And lambda objects have an environtment to close over.
-    env.set("+", Lambda([Arg("x"), Arg("y")],
-                        [Call(iplus, {"x": Symbol("x"), "y": Symbol("y")})],
+    env.set("+", Lambda([Symbol("x"), Symbol("y")],
+                        [Call(iplus, [Symbol("x"), Symbol("y")])],
                         Env(None, None)))
 
     # Lambda:
@@ -36,6 +36,6 @@ def populate_globals(env):
         env.calling_environment.set(sym.symbol, val)
         return val
 
-    env.set("set", Builtin(builtin_set, [Arg("symbol", True), Arg("value")]))
+    env.set("set", Builtin(builtin_set, [Arg("symbol", True), Symbol("value")]))
 
     return env
