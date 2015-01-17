@@ -5,7 +5,7 @@ from fabric.api import task
 def pyshell():
     """Starts an interactive python shell"""
     # TODO import some stuff here
-    context = dict() # and add it to the environment here
+    context = dict()  # and add it to the environment here
     banner = "~~~ Oyster Shell ~~~"
     try:
         # 0.10.x

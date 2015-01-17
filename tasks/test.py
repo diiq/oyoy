@@ -11,7 +11,6 @@ def style():
 @task
 def unit(args=""):
     """Runs unit tests"""
-    setup()
     with hide("running"):
         local("honcho run -e .env.test nosetests --rednose %s" % args)
 
@@ -19,7 +18,6 @@ def unit(args=""):
 @task(default=True)
 def all():
     """Runs all tests; style, unit, and integration."""
-    setup()
     with settings(warn_only=True):
         print "Testing style..."
         style()
