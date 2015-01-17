@@ -30,12 +30,12 @@ Activate the virtual environment (if you just installed, it's already active; se
 
     workon oyoy
 
-Get set up by running:
+Use `fab` to do things:
 
-    fab db.reset
-    fab server
+    fab test.auto
+    fab test.style
 
-You're now running a development server! Yay!
+You're now running a dev setup! Yay!
 
 ## Time savers
 
