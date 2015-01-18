@@ -21,9 +21,10 @@ number = plex.Rep1(digit)
 open = plex.Str("(")
 close = plex.Str(")")
 space = plex.Any(" \t")
+lineterm = plex.Str("\n") | plex.Eof
+colondent = plex.Str(":") + lineterm
 colon = plex.Str(":")
 indentation = plex.Rep(plex.Str(" "))
-lineterm = plex.Str("\n") | plex.Eof
 comment = plex.Str("#") + plex.Rep(plex.AnyBut("\n"))
 blank_line = indentation + plex.Opt(comment) + plex.Str("\n")
 
@@ -114,6 +115,10 @@ class OysterScanner(plex.Scanner):
     def lineterm_action(self, text):
         self.begin('new_line')
 
+    def colondent_action(self, text):
+        self.begin('new_line')
+        return "colondent"
+
     def operator_action(self, text):
         return text
 
@@ -123,6 +128,7 @@ class OysterScanner(plex.Scanner):
         (number,        "number"),
         (open,          open_action),
         (close,         close_action),
+        (colondent,     colondent_action),
         (colon,         "colon"),
         (space,         plex.IGNORE),
         (comment,       plex.IGNORE),

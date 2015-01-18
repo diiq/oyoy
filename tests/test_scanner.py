@@ -45,7 +45,7 @@ class ScannerTests(TestCase):
         """
         file = StringIO(dedent(code))
         scanner = OysterScanner(file, "test_indentation")
-        expected = ["line", "symbol", "colon", "indent",
+        expected = ["line", "symbol", "colondent", "indent",
                     "line", "symbol", "endline",
                     "dedent", "endline",
                     "line", "symbol", "endline"]
@@ -62,7 +62,7 @@ class ScannerTests(TestCase):
         file = StringIO(dedent(code))
         scanner = OysterScanner(file, "test_parens_and_indentation")
         expected = ["line", "open", "symbol", "endline",
-                    "line", "symbol", "colon", "indent",
+                    "line", "symbol", "colondent", "indent",
                     "line", "symbol", "dedent", "close",
                     "number", "endline",
                     "line", "symbol", "endline"]

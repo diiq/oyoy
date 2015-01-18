@@ -36,7 +36,7 @@ class ParserTests(TestCase):
             self.assertDeepMatch(*statement)
 
 
-    def xtest_one_line_colon_no_call(self):
+    def test_one_line_colon_no_call(self):
         code = """
         (pr: foo)
         """
@@ -48,26 +48,26 @@ class ParserTests(TestCase):
         """
         self.assertParsesTo(code, [["pr", ["foo"]]])
 
-    def xtest_one_line_colon(self):
+    def test_one_line_colon(self):
         code = """
         pr bing: foo bar
         """
         self.assertParsesTo(code, [["pr", "bing", ["foo", "bar"]]])
 
-    def xtest_multiline_colon(self):
+    def test_multiline_colon(self):
         code = """
         pr bing:
             foo bar
         """
         self.assertParsesTo(code, [["pr", "bing", ["foo", "bar"]]])
 
-    def xtest_one_line_colon_redundant_parens(self):
+    def test_one_line_colon_redundant_parens(self):
         code = """
         (pr: (foo bar))
         """
         self.assertParsesTo(code, [["pr", ["foo", "bar"]]])
 
-    def xtest_multiline_colon_smorgasbord(self):
+    def test_multiline_colon_smorgasbord(self):
         code = """
         pr:
             foo # Variable
@@ -84,19 +84,19 @@ class ParserTests(TestCase):
 
         self.assertParsesTo(code, expected)
 
-    def xtest_plus(self):
+    def test_plus(self):
         code = """
         set my-plus: λ(x y):
             # commentary goes here
-            + x y
+            x + y
 
-        my-plus 2 (+ 3 5)
+        my-plus 2 (3 + 5)
 
         """
         self.assertParsesTo(code, [
             ["set", "my-plus", ["λ", ["x", "y"],
-                 ["+", "x", "y"]]],
-            ["my-plus", 2, ["+", 3, 5]]])
+                 ["plus", "x", "y"]]],
+            ["my-plus", 2, ["plus", 3, 5]]])
 
     def test_nested_parens_plus(self):
         code = """
@@ -121,6 +121,14 @@ class ParserTests(TestCase):
         """
         self.assertParsesTo(code, [
             ["plus", "my-symbol", "five"]])
+
+    def test_infix_precedence(self):
+        code="""
+        my-symbol + five * 4 + 2
+        """
+        self.assertParsesTo(code, [
+            ["plus", ["plus", "my-symbol",
+                      ["mult", "five", 4]], 2]])
 
     def test_deep_infix(self):
         code="""
