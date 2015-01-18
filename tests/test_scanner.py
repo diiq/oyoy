@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-
+from unittest import TestCase
 from cStringIO import StringIO
 from textwrap import dedent
 from pprint import pformat
 
-from test_case import TestCase
 from parser.scanner import OysterScanner
 
 
@@ -19,25 +18,22 @@ class ScannerTests(TestCase):
     def test_symbol(self):
         file = StringIO("a-symbol")
         scanner = OysterScanner(file, "test_symbol")
-        res = scanner.read()
-        self.assertEqual(res[0], "symbol")
-        self.assertEqual(res[1], "a-symbol")
+        expected = ["line", "symbol", "endline"]
+
+        self.assertScansTo(scanner, expected)
 
     def test_number(self):
         file = StringIO("242")
         scanner = OysterScanner(file, "test_number")
-        res = scanner.read()
-        self.assertEqual(res[0], "number")
-        self.assertEqual(res[1], "242")
+         expected = ["line", "number", "endline"]
+
+        self.assertScansTo(scanner, expected)
 
     def test_chain(self):
         file = StringIO("(a-symbol 3 b)")
         scanner = OysterScanner(file, "test_close")
-        expected = ["open",
-                    "symbol",
-                    "number",
-                    "symbol",
-                    "close"]
+        expected = ["line", "open", "symbol",
+                    "number", "symbol", "close", "endline"]
 
         self.assertScansTo(scanner, expected)
 
@@ -49,9 +45,10 @@ class ScannerTests(TestCase):
         """
         file = StringIO(dedent(code))
         scanner = OysterScanner(file, "test_indentation")
-        expected = ["nodent", "symbol", "colon",
-                    "indent", "symbol",
-                    "dedent", "symbol", "nodent", None]
+        expected = ["line", "symbol", "colon", "indent",
+                    "line", "symbol", "endline",
+                    "dedent", "endline",
+                    "line", "symbol", "endline"]
 
         self.assertScansTo(scanner, expected)
 
@@ -64,14 +61,15 @@ class ScannerTests(TestCase):
         """
         file = StringIO(dedent(code))
         scanner = OysterScanner(file, "test_parens_and_indentation")
-        expected = ["nodent", "open", "symbol",
-                    "nodent", "symbol", "colon",
-                    "indent", "symbol", "dedent", "close", "number",
-                    "nodent", "symbol", "nodent", None]
+        expected = ["line", "open", "symbol", "endline",
+                    "line", "symbol", "colon", "indent",
+                    "line", "symbol", "dedent", "close",
+                                        "number", "endline",
+                    "line", "symbol", "endline"]
 
         self.assertScansTo(scanner, expected)
 
-    def test_plus_program(self):
+    def xtest_plus_program(self):
         code = """
         set my-plus: λ(x y):
             # commentary goes here

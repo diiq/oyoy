@@ -3,13 +3,14 @@
 import plex
 
 
-lmbda = plex.Str("λ")
-# Here's a mighty dangerous game:
-letter = plex.AnyBut("0987654321-+?!$~<>_()\t\n :")
+# Here's a mighty dangerous game, to allow λ, unicode and other
+# foolishness. I will regret this definition:
+letter = plex.AnyBut("0987654321-+?!$~<>_()\t\n :.")
+
 digit = plex.Range("09")
 valid_punctuation = plex.Any("-+?!$~<>_")
-symbol = (letter + plex.Rep(letter | digit | valid_punctuation) |
-          valid_punctuation)
+valid_symbol_char = letter | digit | valid_punctuation
+symbol = letter + plex.Rep(valid_symbol_char) | valid_punctuation
 number = plex.Rep1(digit)
 open = plex.Str("(")
 close = plex.Str(")")
@@ -30,28 +31,43 @@ class OysterScanner(plex.Scanner):
         # The paren stack stores how far back into the indentation
         # stack to pop when we close the next paren.
         self.paren_stack = [0]
-
         plex.Scanner.__init__(self, self.lexicon, file, name)
+        self.lineterm_action('')
 
     def read_all(self):
+        # We'll want to make this into a generator, probs.
         res = []
         token = self.read()
-        res.append(token)
         while token[0]:
-            token = self.read()
             res.append(token)
-        return res
+            token = self.read()
+
+        # Cheat to get rid of inital "endline" and terminating "line"
+        return res[1:-1]
 
     def current_level(self):
         return self.indentation_stack[-1]
 
     def open_action(self, text):
+        """Handles open parens.
+
+        This is complicated by indentation. If we have an open paren,
+        the next newline should be indented to the character following
+        that paren.
+
+        """
         position = self.position()[2]
         self.indentation_stack.append(position + 1)
         self.paren_stack.append(len(self.indentation_stack))
         return "open"
 
     def close_action(self, text):
+        """Handles close parens.
+
+        A close paren necessarily closes all indented blocks contained
+        between it and its matching open.
+
+        """
         ind = self.paren_stack.pop()
         while len(self.indentation_stack) > ind:
             self.produce('dedent', '')
@@ -68,17 +84,23 @@ class OysterScanner(plex.Scanner):
         elif new_level < current_level:
             self.dedent_to(new_level)
         else:
-            self.produce('nodent', '')
+            self.produce('endline', '')
+            self.produce('line', '')
+
         self.begin('')
 
     def indent_to(self, new_level):
         self.indentation_stack.append(new_level)
         self.produce('indent', '')
+        self.produce('line', '')
 
     def dedent_to(self, new_level):
+        self.produce('endline', '')
         while new_level < self.current_level():
             self.indentation_stack.pop()
             self.produce('dedent', '')
+            self.produce('endline', '')
+        self.produce('line', '')
 
     def eof(self):
         self.dedent_to(0)
