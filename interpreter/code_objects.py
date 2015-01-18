@@ -7,7 +7,7 @@ class OyO(object):
 
 class Number(OyO):
     def __init__(self, value):
-        self.number = value
+        self.number = int(value)
 
     def __str__(self):
         return "<num: %s>" % self.number

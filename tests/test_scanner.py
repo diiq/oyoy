@@ -25,7 +25,7 @@ class ScannerTests(TestCase):
     def test_number(self):
         file = StringIO("242")
         scanner = OysterScanner(file, "test_number")
-         expected = ["line", "number", "endline"]
+        expected = ["line", "number", "endline"]
 
         self.assertScansTo(scanner, expected)
 
@@ -64,7 +64,7 @@ class ScannerTests(TestCase):
         expected = ["line", "open", "symbol", "endline",
                     "line", "symbol", "colon", "indent",
                     "line", "symbol", "dedent", "close",
-                                        "number", "endline",
+                    "number", "endline",
                     "line", "symbol", "endline"]
 
         self.assertScansTo(scanner, expected)
@@ -80,10 +80,10 @@ class ScannerTests(TestCase):
         file = StringIO(dedent(code))
         scanner = OysterScanner(file, "test_plus")
         expected = ['nodent', 'symbol', 'symbol', 'colon',
-                      'symbol', 'open', 'symbol', 'symbol', 'close', 'colon',
+                    'symbol', 'open', 'symbol', 'symbol', 'close', 'colon',
                     'indent', 'symbol', 'symbol', 'symbol',
                     'dedent', 'symbol', 'number',
-                      'open', 'symbol', 'number', 'number', 'close',
+                    'open', 'symbol', 'number', 'number', 'close',
                     'nodent', None]
 
         self.assertScansTo(scanner, expected)

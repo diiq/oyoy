@@ -10,7 +10,13 @@ letter = plex.AnyBut("0987654321-+?!$~<>_()\t\n :.")
 digit = plex.Range("09")
 valid_punctuation = plex.Any("-+?!$~<>_")
 valid_symbol_char = letter | digit | valid_punctuation
-symbol = letter + plex.Rep(valid_symbol_char) | valid_punctuation
+symbol = letter + plex.Rep(valid_symbol_char)
+operator = (plex.Str('-') |
+            plex.Str('*') |
+            plex.Str('+') |
+            plex.Str('/') |
+            plex.Str('=='))
+
 number = plex.Rep1(digit)
 open = plex.Str("(")
 close = plex.Str(")")
@@ -108,14 +114,18 @@ class OysterScanner(plex.Scanner):
     def lineterm_action(self, text):
         self.begin('new_line')
 
+    def operator_action(self, text):
+        return text
+
     lexicon = plex.Lexicon([
+        (operator,      operator_action),
         (symbol,        "symbol"),
         (number,        "number"),
         (open,          open_action),
         (close,         close_action),
         (colon,         "colon"),
         (space,         plex.IGNORE),
-        (comment,         plex.IGNORE),
+        (comment,       plex.IGNORE),
         (lineterm,      lineterm_action),
         plex.State('new_line', [
             (blank_line,    plex.IGNORE),
