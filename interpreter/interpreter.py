@@ -1,10 +1,6 @@
-"""An interpreter for a code-as-object version of Oyster, as opposed
-to code-as-list.
-
-"""
-
 from environment import Env
 from code_objects import *
+
 
 Log = []
 
@@ -62,7 +58,7 @@ def eval(stack, current):
         code = instruction.code
 
         # Function call
-        if isinstance(code, Call):
+        if isinstance(code, List):
             return eval_fn(stack, code)
 
         # Self-valued Atom
@@ -112,7 +108,6 @@ def eval_apply(stack, function):
 
     # if it's user-defined, execute the body
     elif isinstance(function, Lambda):
-        for i in range(len(function.body)-1, -1, -1):
-            frame.push(Instruction(Instruction.CODE, function.body[i]))
+        frame.push(Instruction(Instruction.CODE, function.body))
         stack.append(frame)
         return None

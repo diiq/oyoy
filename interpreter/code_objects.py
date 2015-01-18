@@ -29,12 +29,6 @@ class Arg(OyO):
         self.code = code
 
 
-class Call(OyO):
-    def __init__(self, call, args):
-        self.call = call
-        self.args = args
-
-
 class Lambda(OyO):
     def __init__(self, args, body, env):
         self.lambda_list = args
@@ -52,6 +46,8 @@ class Builtin(OyO):
 class List(OyO):
     def __init__(self, items):
         self.items = items
+        self.call = items[0]
+        self.args = items[1:]
 
     def __str__(self):
         return "(%s)" % ", ".join([item.__str__() for item in self.items])

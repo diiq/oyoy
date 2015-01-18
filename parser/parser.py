@@ -14,23 +14,30 @@ class OysterParser(object):
 
     def open(self, text, rest):
         parts, rest = self.parse_until(["close"], rest)
-        return code_objects.List(parts), rest
+        return code_objects.List(parts), rest[1:]
 
     def nodent(self, text, rest):
         parts, rest = self.parse_until(["nodent", "dedent"], rest)
-        if len(parts) > 1:
+        if len(parts) == 0:
+            parts = None
+        elif len(parts) == 1:
+            parts = parts[0]
+        else:
             parts = code_objects.List(parts)
+
         return parts, rest
 
     def colon(self, text, rest):
         if rest[0][0] == "indent":
-            rest = rest[1:]
             parts, rest = self.parse_until(["dedent"], rest)
             return parts, rest
         else:
             return self.nodent(text, rest)
 
     def dedent(self, text, rest):
+        return self.nodent(text, rest)
+
+    def indent(self, text, rest):
         return self.nodent(text, rest)
 
     def close(self, test, rest):
@@ -50,8 +57,6 @@ class OysterParser(object):
                     parts.extend(value)
                 else:
                     parts.append(value)
-        if parts:
-            parts = PrattParser.parse(parts)
         return parts, rest
 
     def parse_all(self, rest):

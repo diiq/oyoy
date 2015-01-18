@@ -22,7 +22,7 @@ class ParserTests(TestCase):
             self.assertEqual(actual.symbol, expected)
 
         elif isinstance(actual, Number):
-            self.assertEqual(acutal.number, expected)
+            self.assertEqual(actual.number, expected)
 
         else:
             assert False, "Unknown type: %s" % actual.__class__.__name__
@@ -69,7 +69,7 @@ class ParserTests(TestCase):
 
         self.assertParsesTo(code, expected)
 
-    def xtest_plus(self):
+    def test_plus(self):
         code = """
         set my-plus: λ(x y):
             # commentary goes here
@@ -78,4 +78,17 @@ class ParserTests(TestCase):
         my-plus 2 (+ 3 5)
 
         """
-        self.assertParsesTo(code, [])
+        self.assertParsesTo(code, [
+            ["set", "my-plus", ["λ", ["x", "y"],
+                 ["+", "x", "y"]]],
+            ["my-plus", 2, ["+", 3, 5]]])
+
+    def test_nested_parens(self):
+        code = """
+        (set my-plus (λ (a b) (+ a b)))
+        (my-plus 2 (+ 3 5))
+        """
+        self.assertParsesTo(code, [
+            ["set", "my-plus", ["λ", ["a", "b"],
+                 ["+", "a", "b"]]],
+            ["my-plus", 2, ["+", 3, 5]]])

@@ -16,14 +16,14 @@ def populate_globals(env):
 
     # And lambda objects have an environtment to close over.
     env.set("+", Lambda([Symbol("x"), Symbol("y")],
-                        [Call(iplus, [Symbol("x"), Symbol("y")])],
+                        List([iplus, Symbol("x"), Symbol("y")]),
                         Env(None, None)))
 
     # Lambda:
     def builtin_lambda(env):
         args = env.lookup("args")
         body = env.lookup("body")
-        return Lambda(args.items, body.items, env.calling_environment)
+        return Lambda(args.items, body, env.calling_environment)
 
     env.set("fn",
             Builtin(builtin_lambda, [Arg("args", True),
