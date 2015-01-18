@@ -1,6 +1,11 @@
 from unittest import TestCase as TC
+from cStringIO import StringIO
+from textwrap import dedent
+from pprint import pformat
+
 from interpreter.interpreter import eval, Frame, Instruction
 from interpreter.environment import Env
+from interpreter.code_objects import *
 from interpreter.globals import populate_globals
 from parser.parser import OysterParser
 from parser.scanner import OysterScanner
@@ -12,12 +17,15 @@ class TestCase(TC):
     def run_program(self, filename):
         with open(filename) as file:
             tokens = OysterScanner(file, filename).read_all()
-        instructions = [Instruction(Instruction.CODE, statement) for statement in OysterParser.parse(tokens)]
+        instructions = [Instruction(Instruction.CODE, statement)
+                        for statement in OysterParser.parse(tokens)]
+
         print "--- INSTRUCTIONS ---"
         for instruction in instructions:
             print instruction.code
         instructions.reverse()
         print "--- END INSTRUCTIONS ---"
+
         stack = [Frame(instructions, self.env)]
         cur = None
         while stack:
@@ -40,3 +48,30 @@ class TestCase(TC):
         while stack:
             cur = eval(stack, cur)
         return cur
+
+
+class ParserTestCase(TC):
+
+    def assertDeepMatch(self, actual, expected):
+        print actual, expected
+        if isinstance(actual, List):
+            self.assertEqual(len(actual.items), len(expected))
+            for item in zip(actual.items, expected):
+                self.assertDeepMatch(*item)
+
+        elif isinstance(actual, Symbol):
+            self.assertEqual(actual.symbol, expected)
+
+        elif isinstance(actual, Number):
+            self.assertEqual(actual.number, expected)
+
+        else:
+            assert False, "Unknown type: %s" % actual.__class__.__name__
+
+    def assertParsesTo(self, code, expected):
+        file = StringIO(dedent(code))
+        tokens = OysterScanner(file, "test").read_all()
+        statements = OysterParser.parse(tokens)
+        print "DEEP MATCHING", statements, expected
+        for statement in zip(statements, expected):
+            self.assertDeepMatch(*statement)
