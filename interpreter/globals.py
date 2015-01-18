@@ -15,7 +15,7 @@ def populate_globals(env):
     env.set("builtin+", iplus)
 
     # And lambda objects have an environtment to close over.
-    env.set("+", Lambda([Symbol("x"), Symbol("y")],
+    env.set("plus", Lambda([Symbol("x"), Symbol("y")],
                         List([iplus, Symbol("x"), Symbol("y")]),
                         Env(None, None)))
 

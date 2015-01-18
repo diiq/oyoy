@@ -69,21 +69,23 @@ class ScannerTests(TestCase):
 
         self.assertScansTo(scanner, expected)
 
-    def xtest_plus_program(self):
+    def test_plus_program(self):
         code = """
         set my-plus: λ(x y):
             # commentary goes here
-            + x y
+            x + y
 
-        my-plus 2 (+ 3 5)
+        my-plus 2 (3 + 5)
         """
         file = StringIO(dedent(code))
         scanner = OysterScanner(file, "test_plus")
-        expected = ['nodent', 'symbol', 'symbol', 'colon',
-                    'symbol', 'open', 'symbol', 'symbol', 'close', 'colon',
-                    'indent', 'symbol', 'symbol', 'symbol',
-                    'dedent', 'symbol', 'number',
-                    'open', 'symbol', 'number', 'number', 'close',
-                    'nodent', None]
+        expected = ['line', 'symbol', 'symbol', 'colon',
+                    'symbol', 'open', 'symbol', 'symbol', 'close',
+                    'colondent', 'indent',
+                    'line', 'symbol', '+', 'symbol', 'endline',
+                    'dedent', 'endline',
+                    'line', 'symbol', 'number',
+                    'open', 'number', '+', 'number', 'close',
+                    'endline']
 
         self.assertScansTo(scanner, expected)

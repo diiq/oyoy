@@ -1,5 +1,5 @@
 
 set my-plus: fn (a b):
-    + a b
+    a + b
 
-my-plus 2 (+ 3 5)
+my-plus 2 (3 + 5)
