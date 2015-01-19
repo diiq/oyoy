@@ -9,6 +9,7 @@ class OysterParser(object):
             "open": ParenOperator(0),
             "line": NewlineOperator(0),
             "-": PrefixOperator("negative", 10),
+            "!": PrefixOperator("not", 10),
         }
 
         self.infixes = {
@@ -20,6 +21,13 @@ class OysterParser(object):
 
             "==": InfixOperator("equal", 4),
             "!=": InfixOperator("not-equal", 4),
+            ">=": InfixOperator("greater-than-or-equal", 4),
+            "<=": InfixOperator("less-than-or-equal", 4),
+            ">": InfixOperator("greater-than", 4),
+            "<": InfixOperator("less-than", 4),
+
+            "&&": InfixOperator("and", 3),
+            "||": InfixOperator("or", 2),
 
             "colon": ColonOperator(8),
             "colondent": ColondentOperator(9),

@@ -12,11 +12,18 @@ valid_punctuation = plex.Any("-+?!$~<>_")
 valid_symbol_char = letter | digit | valid_punctuation
 symbol = letter + plex.Rep(valid_symbol_char)
 operator = (plex.Str('-') |
+            plex.Str('!') |
             plex.Str('*') |
             plex.Str('+') |
             plex.Str('/') |
-            plex.Str('=='))
-
+            plex.Str('==') |
+            plex.Str('!=') |
+            plex.Str('<=') |
+            plex.Str('>=') |
+            plex.Str('<') |
+            plex.Str('>') |
+            plex.Str('&&') |
+            plex.Str('||'))
 number = plex.Rep1(digit)
 open = plex.Str("(")
 close = plex.Str(")")
