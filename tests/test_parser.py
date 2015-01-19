@@ -120,6 +120,16 @@ class MultiLineParserTests(ParserTestCase):
 
         self.assertParsesTo(code, expected)
 
+    def test_multiline_colon_parens(self):
+        code = """
+        sing (hello there:
+                 neighbor boy) I am 5
+
+        """
+        self.assertParsesTo(code, [["sing", ["hello", "there",
+                                            ["neighbor", "boy"]],
+                                    "I", "am", 5]])
+
     def test_plus(self):
         code = """
         set my-plus: λ(x y):

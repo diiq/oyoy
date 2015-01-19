@@ -12,12 +12,7 @@ def populate_globals(env):
     # Builtin *objects* have arglists, though.
     iplus = Builtin(builtin_plus, [Symbol("x"), Symbol("y")])
 
-    env.set("builtin+", iplus)
-
-    # And lambda objects have an environtment to close over.
-    env.set("plus", Lambda([Symbol("x"), Symbol("y")],
-                        List([iplus, Symbol("x"), Symbol("y")]),
-                        Env(None, None)))
+    env.set("plus", iplus)
 
     # Lambda:
     def builtin_lambda(env):
@@ -26,8 +21,10 @@ def populate_globals(env):
         return Lambda(args.items, body, env.calling_environment)
 
     env.set("fn",
-            Builtin(builtin_lambda, [Arg("args", True),
-                                     Arg("body", True)]))
+            Builtin(builtin_lambda,
+                    [List([Symbol("quote"), Symbol("args")]),
+                     List([Symbol("quote"), Symbol("body")])]))
+
 
     # Lambda:
     def builtin_set(env):
@@ -37,6 +34,7 @@ def populate_globals(env):
         return val
 
     env.set("set", Builtin(builtin_set,
-                           [Arg("symbol", True), Symbol("value")]))
+                           [List([Symbol("quote"), Symbol("symbol")]),
+                            Symbol("value")]))
 
     return env

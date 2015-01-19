@@ -11,7 +11,8 @@ digit = plex.Range("09")
 valid_punctuation = plex.Any("-+?!$~<>_")
 valid_symbol_char = letter | digit | valid_punctuation
 symbol = letter + plex.Rep(valid_symbol_char)
-operator = (plex.Str('-') |
+operator = (plex.Str('...') |
+            plex.Str('-') |
             plex.Str('!') |
             plex.Str('*') |
             plex.Str('+') |

@@ -6,10 +6,12 @@ class OysterParser(object):
         self.prefixes = {
             "symbol": LiteralPrefixOperator(Symbol), # -1
             "number": LiteralPrefixOperator(Number), # -1
-            "open": ParenOperator(0),
+            "open": ParenOperator(-1),
             "line": NewlineOperator(0),
             "-": PrefixOperator("negative", 10),
             "!": PrefixOperator("not", 10),
+            "...": PrefixOperator("ellipsis", 10),
+            "'": PrefixOperator("quote", 10),
         }
 
         self.infixes = {
@@ -119,7 +121,9 @@ class NewlineOperator(object):
     def parse(self, item, right, parser):
         within, right = parser.expression(self.precedence, right)
         print "This line contains", within, right
-        right = right[1:]
+        if right[0][0] == "endline":
+            right = right[1:]
+
         if isinstance(within, list):
             within = List(within)
         return within, right
