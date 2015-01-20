@@ -4,8 +4,8 @@ from interpreter.code_objects import *
 class OysterParser(object):
     def __init__(self):
         self.prefixes = {
-            "symbol": LiteralPrefixOperator(Symbol), # -1
-            "number": LiteralPrefixOperator(Number), # -1
+            "symbol": LiteralPrefixOperator(Symbol, -1),
+            "number": LiteralPrefixOperator(Number, -1),
             "open": ParenOperator(-1),
             "line": NewlineOperator(0),
             "-": PrefixOperator("negative", 10),
@@ -40,6 +40,12 @@ class OysterParser(object):
     @classmethod
     def parse(Cls, tokens):
         ret, tokens = Cls().expression(-1, tokens)
+        if not isinstance(ret, list):
+            ret = [ret]
+        return ret
+
+    def farse(self, tokens):
+        ret, tokens = self.expression(-1, tokens)
         if not isinstance(ret, list):
             ret = [ret]
         return ret
@@ -114,7 +120,7 @@ class PrefixOperator(object):
         return List([self.representation(), within]), right
 
 
-class NewlineOperator(object):
+class NewlineOperator(PrefixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 
@@ -129,7 +135,7 @@ class NewlineOperator(object):
         return within, right
 
 
-class ParenOperator(object):
+class ParenOperator(PrefixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 
@@ -142,9 +148,9 @@ class ParenOperator(object):
         return List(within), right
 
 
-class LiteralPrefixOperator(object):
-    precedence = -1
-    def __init__(self, constructor):
+class LiteralPrefixOperator(PrefixOperator):
+    def __init__(self, constructor, precedence):
+        self.precedence = precedence
         self.constructor = constructor
 
     def parse(self, item, right, parser):
@@ -174,7 +180,7 @@ class InfixOperator(object):
         return [self.representation(), left, right], far_right
 
 
-class NullInfix(object):
+class NullInfix(InfixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 
@@ -190,7 +196,7 @@ class NullInfix(object):
         return left + right, far_right
 
 
-class ColonOperator(object):
+class ColonOperator(InfixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 
@@ -206,7 +212,7 @@ class ColonOperator(object):
         return left + [right], far_right
 
 
-class ColondentOperator(object):
+class ColondentOperator(InfixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 

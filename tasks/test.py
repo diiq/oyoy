@@ -28,8 +28,8 @@ def all():
 @task
 def auto(args=None):
     """Runs unit tests continuously, re-running when files have changed."""
-    with hide("running"):
-        if args:
-            local("honcho run -e .env.test sniffer -x --rednose -x%s" % args)
-        else:
-            local("honcho run -e .env.test sniffer -x --rednose")
+    #    with hide("running"):
+    if args:
+        local("honcho run -e .env.test sniffer -x --rednose -x-P -x%s" % args)
+    else:
+        local("honcho run -e .env.test sniffer -x-P -x --rednose")

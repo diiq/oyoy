@@ -4,6 +4,7 @@ import os.path
 import tasks.test as test
 from tasks.requirements import requirements
 from tasks.shell import pyshell
+from tasks.build import build
 
 # flake8: noqa
 
