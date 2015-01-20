@@ -4,22 +4,18 @@ it becomes less lisp-like with each iteration).
 ## Oyster
 
 Oyster is lisp-like; but rather than being built around cons cells,
-it's built around rather Frankensteinian data structures that have
-three parts. There each one has a list-y bit, which can be iterated
-over; a hash-y bit, which supports key-value lookups, and a 'metadata'
-bit, for, uh, metadata about the object (its class, its lexical
-environment, etc).
+it's built around arrays and hash tables.
 
-Oyster's syntax is based on Psychotic Bastard. Much of the development
+Oyster's syntax is based on 'Psychotic Bastard', designed by @AdamHeck. Much of the development
 of the PB syntax for lisp is documented in [this
 gist](https://gist.github.com/diiq/1087830).
 
 Here's a very simple sample that currently runs:
 
     set my-plus: fn (a b):
-        + a b
+        a + b
 
-    my-plus 2 (+ 3 5)
+    my-plus 2 (3 + 5)
 
 (It returns 10.)
 
