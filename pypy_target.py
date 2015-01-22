@@ -2,12 +2,24 @@ import sys
 import os
 from oyster.oyster_scanner import OysterScanner
 from oyster.oyster_parser import OysterParser
+from interpreter.interpreter import eval, Frame, Instruction
+from interpreter.globals import populate_globals
+from interpreter.environment import Env
 
 def run_string(string):
     tokens = OysterScanner(string).tokenize()
     statements = OysterParser().parse(tokens)
-    print statements
-    print "done"
+    instructions = [Instruction(Instruction.CODE, statement)
+                        for statement in OysterParser().parse(tokens).items]
+    instructions.reverse()
+    env = populate_globals(Env(None, None))
+    stack = [Frame(instructions, env)]
+    cur = None
+    while stack:
+        cur = eval(stack, cur)
+
+    print "Result is", cur.__str__()
+
 
 def run(fp):
     program_contents = ""

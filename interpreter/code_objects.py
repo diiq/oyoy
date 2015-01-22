@@ -8,7 +8,7 @@ class OyO(object):
 
 class Number(OyO):
     def __init__(self, value):
-        self.number = int(value)
+        self.number = value
 
     def __str__(self):
         return "<num: %s>" % self.number
@@ -54,10 +54,17 @@ class List(OyO):
         return "(%s)" % ", ".join([item.__str__() for item in self.items])
 
 
-# Only exists during parsing:
+##################################################################
+# The following classes and constructors used during parsing only:
 
 class PartialList(List):
     pass
+
+def make_number(str):
+    return Number(int(str, 10))
+
+def make_symbol(str):
+    return Symbol(str)
 
 def close_partial_lists(obj):
     if isinstance(obj, PartialList):

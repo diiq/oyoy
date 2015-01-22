@@ -22,17 +22,22 @@ class TokenStream(object):
 class OysterParser(object):
     def __init__(self):
         self.prefixes = {
-            "symbol": LiteralPrefixOperator(Symbol, -1),
-            "number": LiteralPrefixOperator(Number, -1),
+            "symbol": LiteralPrefixOperator(make_symbol, -1),
+            "number": LiteralPrefixOperator(make_number, -1),
             "open":   ParenOperator(-1),
             "line":   NewlineOperator(0),
             "-":      PrefixOperator("negative", 10),
             "!":      PrefixOperator("not", 10),
             "...":    PrefixOperator("ellipsis", 10),
             "'":      PrefixOperator("quote", 10),
+            "colon":  ColonOperator(1),
         }
 
         self.infixes = {
+            "null": NullInfix(10),
+
+            "colondent": ColondentOperator(2),
+
             "*":  InfixOperator("multiply", 7),
             "/":  InfixOperator("divide", 7),
 
@@ -49,10 +54,6 @@ class OysterParser(object):
             "&&": InfixOperator("and", 3),
             "||": InfixOperator("or", 2),
 
-            "colon": ColonOperator(8),
-            "colondent": ColondentOperator(9),
-
-            "null": NullInfix(10)
         }
 
         self.closers = ["close", "endline", "dedent"]
@@ -162,6 +163,18 @@ class LiteralPrefixOperator(PrefixOperator):
     def parse(self, token, right, parser):
         return self.constructor(token.text)
 
+
+class ColonOperator(PrefixOperator):
+    def __init__(self, precedence):
+        self.precedence = precedence
+
+    def parse(self, token, right, parser):
+        within = parser.expression(self.precedence)
+        within = close_partial_lists(within)
+
+        return PartialList([within])
+
+
 ###################
 # Infix Operators
 #
@@ -193,19 +206,6 @@ class NullInfix(InfixOperator):
         right_side = ensure_partial_list(right_side)
 
         return PartialList(left.items + right_side.items)
-
-
-class ColonOperator(InfixOperator):
-    def __init__(self, precedence):
-        self.precedence = precedence
-
-    def parse(self, left, token, right, parser):
-        right_side = parser.expression(self.precedence)
-
-        right_side = close_partial_lists(right_side)
-        left = ensure_partial_list(left)
-
-        return PartialList(left.items + [right_side])
 
 
 class ColondentOperator(InfixOperator):

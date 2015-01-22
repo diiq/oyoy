@@ -72,23 +72,35 @@ class OneLineParserTests(ParserTestCase):
 
 class OneLineColonParserTests(ParserTestCase):
 
-    def test_one_line_colon_no_call(self):
+    def test_no_call(self):
         code = """
         (pr: foo)
         """
         self.assertParsesTo(code, [["pr", "foo"]])
 
-    def test_one_line_colon(self):
+    def test_colon(self):
         code = """
         pr bing: foo bar
         """
         self.assertParsesTo(code, [["pr", "bing", ["foo", "bar"]]])
 
-    def test_one_line_colon_redundant_parens(self):
+    def test_redundant_parens(self):
         code = """
         (pr: (foo bar))
         """
         self.assertParsesTo(code, [["pr", ["foo", "bar"]]])
+
+    def test_double_colon(self):
+        code = """
+        pr: foo bar: baz bing
+        """
+        self.assertParsesTo(code, [["pr", ["foo", "bar", ["baz", "bing"]]]])
+
+    def test_double_colon_parens(self):
+        code = """
+        (pr: foo bar: baz bing)
+        """
+        self.assertParsesTo(code, [["pr", ["foo", "bar", ["baz", "bing"]]]])
 
 
 class MultiLineParserTests(ParserTestCase):
@@ -151,3 +163,12 @@ class MultiLineParserTests(ParserTestCase):
             ["set", "my-plus", ["λ", ["a", "b"],
                  ["add", "a", "b"]]],
             ["my-plus", 2, ["add", 3, 5]]])
+
+    def test_operator_before_colon(self):
+        code = """
+        if (x == y):
+            x + y
+        """
+        self.assertParsesTo(code, [
+            ["if", ["equal?", "x", "y"],
+                 ["add", "x", "y"]]])

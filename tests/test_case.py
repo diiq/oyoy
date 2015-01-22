@@ -16,15 +16,9 @@ class TestCase(TC):
 
     def run_program(self, filename):
         with open(filename) as file:
-            tokens = OysterScanner(file, filename).read_all()
+            tokens = OysterScanner(file.read()).tokenize()
         instructions = [Instruction(Instruction.CODE, statement)
-                        for statement in OysterParser.parse(tokens)]
-
-        print "--- INSTRUCTIONS ---"
-        for instruction in instructions:
-            print instruction.code
-        instructions.reverse()
-        print "--- END INSTRUCTIONS ---"
+                        for statement in OysterParser().parse(tokens).items]
 
         stack = [Frame(instructions, self.env)]
         cur = None
@@ -53,7 +47,6 @@ class TestCase(TC):
 class ParserTestCase(TC):
 
     def assertDeepMatch(self, actual, expected):
-        print actual, expected
         assert not isinstance(actual, PartialList)
         if isinstance(actual, List):
             self.assertEqual(len(actual.items), len(expected))
@@ -72,6 +65,4 @@ class ParserTestCase(TC):
     def assertParsesTo(self, code, expected):
         tokens = OysterScanner(dedent(code)).tokenize()
         statements = OysterParser().parse(tokens)
-        print statements
         self.assertDeepMatch(statements, expected)
-        print statements
