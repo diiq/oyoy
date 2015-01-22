@@ -7,8 +7,8 @@ from interpreter.interpreter import eval, Frame, Instruction
 from interpreter.environment import Env
 from interpreter.code_objects import *
 from interpreter.globals import populate_globals
-from parser.parser import OysterParser
-from parser.scanner import OysterScanner
+from oyster.oyster_parser import OysterParser
+from oyster.oyster_scanner import OysterScanner
 
 class TestCase(TC):
     def setUp(self):
@@ -54,6 +54,7 @@ class ParserTestCase(TC):
 
     def assertDeepMatch(self, actual, expected):
         print actual, expected
+        assert not isinstance(actual, PartialList)
         if isinstance(actual, List):
             self.assertEqual(len(actual.items), len(expected))
             for item in zip(actual.items, expected):
@@ -69,9 +70,8 @@ class ParserTestCase(TC):
             assert False, "Unknown type: %s" % actual.__class__.__name__
 
     def assertParsesTo(self, code, expected):
-        file = StringIO(dedent(code))
-        tokens = OysterScanner(file, "test").read_all()
-        statements = OysterParser.parse(tokens)
-        print "DEEP MATCHING", statements, expected
-        for statement in zip(statements, expected):
-            self.assertDeepMatch(*statement)
+        tokens = OysterScanner(dedent(code)).tokenize()
+        statements = OysterParser().parse(tokens)
+        print statements
+        self.assertDeepMatch(statements, expected)
+        print statements

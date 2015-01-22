@@ -1,7 +1,23 @@
 import sys
+import os
+from oyster.oyster_scanner import OysterScanner
+from oyster.oyster_parser import OysterParser
 
-from oyster import run_string
+def run_string(string):
+    tokens = OysterScanner(string).tokenize()
+    statements = OysterParser().parse(tokens)
+    print statements
+    print "done"
 
+def run(fp):
+    program_contents = ""
+    while True:
+        read = os.read(fp, 4096)
+        if len(read) == 0:
+            break
+        program_contents += read
+    os.close(fp)
+    run_string(program_contents)
 
 def entry_point(argv):
     try:
@@ -10,7 +26,7 @@ def entry_point(argv):
         print "You must supply a filename"
         return 1
 
-    run_string()
+    run(os.open(filename, os.O_RDONLY, 0777))
     return 0
 
 def target(*args):

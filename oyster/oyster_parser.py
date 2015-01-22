@@ -1,4 +1,22 @@
 from interpreter.code_objects import *
+from oyster_scanner import Token
+
+
+class TokenStream(object):
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.index = 0
+
+    def peek(self):
+        return self.tokens[self.index]
+
+    def next(self):
+        ret = self.tokens[self.index]
+        self.index += 1
+        return ret
+
+    def eof(self):
+        return self.index >= len(self.tokens)
 
 
 class OysterParser(object):
@@ -6,27 +24,27 @@ class OysterParser(object):
         self.prefixes = {
             "symbol": LiteralPrefixOperator(Symbol, -1),
             "number": LiteralPrefixOperator(Number, -1),
-            "open": ParenOperator(-1),
-            "line": NewlineOperator(0),
-            "-": PrefixOperator("negative", 10),
-            "!": PrefixOperator("not", 10),
-            "...": PrefixOperator("ellipsis", 10),
-            "'": PrefixOperator("quote", 10),
+            "open":   ParenOperator(-1),
+            "line":   NewlineOperator(0),
+            "-":      PrefixOperator("negative", 10),
+            "!":      PrefixOperator("not", 10),
+            "...":    PrefixOperator("ellipsis", 10),
+            "'":      PrefixOperator("quote", 10),
         }
 
         self.infixes = {
-            "*": InfixOperator("mult", 7),
-            "/": InfixOperator("divide", 7),
+            "*":  InfixOperator("multiply", 7),
+            "/":  InfixOperator("divide", 7),
 
-            "+": InfixOperator("plus", 6),
-            "-": InfixOperator("minus", 6),
+            "+":  InfixOperator("add", 6),
+            "-":  InfixOperator("subtract", 6),
 
-            "==": InfixOperator("equal", 4),
-            "!=": InfixOperator("not-equal", 4),
-            ">=": InfixOperator("greater-than-or-equal", 4),
-            "<=": InfixOperator("less-than-or-equal", 4),
-            ">": InfixOperator("greater-than", 4),
-            "<": InfixOperator("less-than", 4),
+            "==": InfixOperator("equal?", 4),
+            "!=": InfixOperator("not-equal?", 4),
+            ">=": InfixOperator("greater-than-or-equal?", 4),
+            "<=": InfixOperator("less-than-or-equal?", 4),
+            ">":  InfixOperator("greater-than?", 4),
+            "<":  InfixOperator("less-than?", 4),
 
             "&&": InfixOperator("and", 3),
             "||": InfixOperator("or", 2),
@@ -37,70 +55,59 @@ class OysterParser(object):
             "null": NullInfix(10)
         }
 
-    @classmethod
-    def parse(Cls, tokens):
-        ret, tokens = Cls().expression(-1, tokens)
-        if not isinstance(ret, list):
-            ret = [ret]
-        return ret
+        self.closers = ["close", "endline", "dedent"]
 
-    def farse(self, tokens):
-        ret, tokens = self.expression(-1, tokens)
-        if not isinstance(ret, list):
-            ret = [ret]
-        return ret
+    def parse(self, tokens):
+        self.right = TokenStream(tokens)
+        ret = self.expression(-1)
+        # ENSURE LIST
+        return enforce_list(ret)
 
-    def expression(self, prev_precedence, right):
-        print "EXPRESSION", prev_precedence, right
+    def expression(self, prev_precedence):
+        left = self.build_left(self.right.next())
 
-        left, right = self.build_left(*self.next(right))
+        while (not self.right.eof() and
+               not self.next_is_closing()
+               and self.precedence(self.peek_or_null()) > prev_precedence):
+            token = self.next_or_null()
+            left = self.fill_right(left, token)
 
-        while (right and
-               not self.is_closing(right[0])
-               and self.precedence(self.peek_or_null(right)) > prev_precedence):
+        return left
 
-            left, right = self.fill_right(
-                left, *self.next_or_null(right))
-
-        return left, right
-
-    def next(self, right):
-        current = right[0]
-        right = right[1:]
-        return current, right
-
-    def next_or_null(self, right):
-        if right[0][0] not in self.infixes:
-            return ("null", ''), right
+    def peek_or_null(self):
+        if self.right.peek().purpose in self.infixes:
+            return self.right.peek()
         else:
-            return self.next(right)
+            return Token("null", '')
 
-    def peek_or_null(self, right):
-        if right[0][0] not in self.infixes:
-            return ("null", '')
+    def next_or_null(self):
+        if self.right.peek().purpose in self.infixes:
+            return self.right.next()
         else:
-            return right[0]
+            return Token("null", '')
 
-    def is_closing(self, token):
-        return token[0] in ["close", "endline", "dedent"]
+    def next_is_closing(self):
+        return self.right.peek().purpose in self.closers
 
     def precedence(self, token):
-        if token[0] in self.infixes:
-            return self.infixes[token[0]].precedence
+        if token.purpose in self.infixes:
+            return self.infixes[token.purpose].precedence
         else:
             return -1
 
-    def build_left(self, item, right):
-        assert item[0] in self.prefixes, \
-            "%s is not a prefix operator" % item[0]
+    def build_left(self, token):
+        assert token.purpose in self.prefixes, \
+            "%s is not a prefix operator" % token.purpose
 
-        return self.prefixes[item[0]].parse(item, right, self)
+        operator = self.prefixes[token.purpose]
+        return operator.parse(token, self.right, self)
 
-    def fill_right(self, left, item, right):
-        assert item[0] in self.infixes, \
-            "%s is not an infix operator" % item[0]
+    def fill_right(self, left, token):
+        assert token.purpose in self.infixes, \
+            "%s is not an infix operator" % token.purpose
 
-        return self.infixes[item[0]].parse(left, item, right, self)
+        operator = self.infixes[token.purpose]
+        return operator.parse(left, token, self.right, self)
 
 
 ###################
@@ -115,37 +122,36 @@ class PrefixOperator(object):
     def representation(self):
         return Symbol(self.symbol)
 
-    def parse(self, item, right, parser):
-        within, right = parser.expression(self.precedence, right)
-        return List([self.representation(), within]), right
+    def parse(self, token, right, parser):
+        within = parser.expression(self.precedence)
+        within = close_partial_lists(within)
+        return List([self.representation(), within])
 
 
 class NewlineOperator(PrefixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 
-    def parse(self, item, right, parser):
-        within, right = parser.expression(self.precedence, right)
-        print "This line contains", within, right
-        if right[0][0] == "endline":
-            right = right[1:]
+    def parse(self, token, right, parser):
+        within = parser.expression(self.precedence)
+        if right.peek().purpose == "endline":
+            right.next()
 
-        if isinstance(within, list):
-            within = List(within)
-        return within, right
+        return close_partial_lists(within)
 
 
 class ParenOperator(PrefixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 
-    def parse(self, item, right, parser):
-        within, right = parser.expression(self.precedence, right)
-        print "These parens contain", within, right
-        right = right[1:]
-        if not isinstance(within, list):
-            within = [within]
-        return List(within), right
+    def parse(self, token, right, parser):
+        within = parser.expression(self.precedence)
+        right.next()
+        # Todo assertion
+
+        within = enforce_list(within)
+
+        return within
 
 
 class LiteralPrefixOperator(PrefixOperator):
@@ -153,8 +159,8 @@ class LiteralPrefixOperator(PrefixOperator):
         self.precedence = precedence
         self.constructor = constructor
 
-    def parse(self, item, right, parser):
-        return self.constructor(item[1]), right
+    def parse(self, token, right, parser):
+        return self.constructor(token.text)
 
 ###################
 # Infix Operators
@@ -168,64 +174,51 @@ class InfixOperator(object):
     def representation(self):
         return Symbol(self.symbol)
 
-    def parse(self, left, item, right, parser):
-        right, far_right = parser.expression(self.precedence, right)
+    def parse(self, left, token, right, parser):
+        right_side = parser.expression(self.precedence)
 
-        if isinstance(left, list):
-            left = List(left)
-
-        if isinstance(right, list):
-            right = List(right)
-
-        return [self.representation(), left, right], far_right
+        return PartialList([self.representation(),
+                            close_partial_lists(left),
+                            close_partial_lists(right_side)])
 
 
 class NullInfix(InfixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 
-    def parse(self, left, item, right, parser):
-        right, far_right = parser.expression(self.precedence, right)
+    def parse(self, left, token, right, parser):
+        right_side = parser.expression(self.precedence)
 
-        if not isinstance(left, list):
-            left = [left]
+        left = ensure_partial_list(left)
+        right_side = ensure_partial_list(right_side)
 
-        if not isinstance(right, list):
-            right = [right]
-
-        return left + right, far_right
+        return PartialList(left.items + right_side.items)
 
 
 class ColonOperator(InfixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 
-    def parse(self, left, item, right, parser):
-        right, far_right = parser.expression(self.precedence, right)
+    def parse(self, left, token, right, parser):
+        right_side = parser.expression(self.precedence)
 
-        if not isinstance(left, list):
-            left = [left]
+        right_side = close_partial_lists(right_side)
+        left = ensure_partial_list(left)
 
-        if isinstance(right, list):
-            right = List(right)
-
-        return left + [right], far_right
+        return PartialList(left.items + [right_side])
 
 
 class ColondentOperator(InfixOperator):
     def __init__(self, precedence):
         self.precedence = precedence
 
-    def parse(self, left, item, right, parser):
-        right = right[1:]
-        right, far_right = parser.expression(self.precedence, right)
+    def parse(self, left, token, right, parser):
+        right.next() # Todo assert
+        right_side = parser.expression(self.precedence)
+        right.next() # Todo assert
 
-        if not isinstance(left, list):
-            left = [left]
+        # ensure both are lists
+        left = ensure_partial_list(left)
+        right_side = ensure_partial_list(right_side)
 
-        if not isinstance(right, list):
-            right = [right]
-
-        far_right = far_right[1:]
-
-        return left + right, far_right
+        return PartialList(left.items + right_side.items)

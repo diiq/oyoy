@@ -70,7 +70,9 @@ class OysterScanner(Scanner):
     def tokenize(self):
         while self.tokenize_one():
             pass
-        return self.tokens[1:-1]
+        tokens = self.tokens[1:]
+        tokens.pop()
+        return tokens
 
     def current_indentation(self):
         return self.indentation_stack[-1]

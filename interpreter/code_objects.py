@@ -2,7 +2,8 @@ from environment import Env
 
 
 class OyO(object):
-    pass
+    def __init__():
+        pass
 
 
 class Number(OyO):
@@ -51,3 +52,25 @@ class List(OyO):
 
     def __str__(self):
         return "(%s)" % ", ".join([item.__str__() for item in self.items])
+
+
+# Only exists during parsing:
+
+class PartialList(List):
+    pass
+
+def close_partial_lists(obj):
+    if isinstance(obj, PartialList):
+        return List(obj.items)
+    return obj
+
+def ensure_partial_list(obj):
+    if not isinstance(obj, PartialList):
+        return PartialList([obj])
+    return obj
+
+def enforce_list(obj):
+    if isinstance(obj, PartialList):
+        return List(obj.items)
+    else:
+        return List([obj])
