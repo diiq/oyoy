@@ -2,6 +2,7 @@ from stream import Stream
 
 DITTO = "DITTO"
 
+
 class Token(object):
     def __init__(self, purpose, text):
         self.purpose = purpose

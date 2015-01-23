@@ -11,29 +11,29 @@ class OneLineParserTests(ParserTestCase):
         self.assertParsesTo(code, [["pr", ["foo"]]])
 
     def test_prefix(self):
-        code="""
+        code = """
         -my-symbol
         """
         self.assertParsesTo(code, [
             ["negative", "my-symbol"]])
 
     def test_infix(self):
-        code="""
+        code = """
         my-symbol + five
         """
         self.assertParsesTo(code, [
             ["add", "my-symbol", "five"]])
 
     def test_infix_precedence(self):
-        code="""
+        code = """
         my-symbol + five * 4 + 2
         """
         self.assertParsesTo(code, [
             ["add", ["add", "my-symbol",
-                      ["multiply", "five", 4]], 2]])
+                     ["multiply", "five", 4]], 2]])
 
     def test_deep_infix(self):
-        code="""
+        code = """
         dig inbroom my-symbol + two five seven
         """
         self.assertParsesTo(code, [
@@ -42,28 +42,28 @@ class OneLineParserTests(ParserTestCase):
              ["two", "five", "seven"]]])
 
     def test_calls(self):
-        code="""
+        code = """
         tremble barf fob
         """
         self.assertParsesTo(code, [
             ["tremble", "barf", "fob"]])
 
     def test_prefix_call(self):
-        code="""
+        code = """
         -tremble barf
         """
         self.assertParsesTo(code, [
             [["negative", "tremble"], "barf"]])
 
     def test_parens(self):
-        code="""
+        code = """
         (tremble barf)
         """
         self.assertParsesTo(code, [
             ["tremble", "barf"]])
 
     def test_nested_parens(self):
-        code="""
+        code = """
         (tremble (organic barf))
         """
         self.assertParsesTo(code, [
@@ -112,7 +112,6 @@ class MultiLineParserTests(ParserTestCase):
         """
         self.assertParsesTo(code, [["pr", "bing", ["foo", "bar"]]])
 
-
     def test_multiline_colon_smorgasbord(self):
         code = """
         pr:
@@ -137,7 +136,7 @@ class MultiLineParserTests(ParserTestCase):
 
         """
         self.assertParsesTo(code, [["sing", ["hello", "there",
-                                            ["neighbor", "boy"]],
+                                             ["neighbor", "boy"]],
                                     "I", "am", 5]])
 
     def test_plus(self):
@@ -151,7 +150,7 @@ class MultiLineParserTests(ParserTestCase):
         """
         self.assertParsesTo(code, [
             ["set", "my-plus", ["λ", ["x", "y"],
-                 ["add", "x", "y"]]],
+                                ["add", "x", "y"]]],
             ["my-plus", 2, ["add", 3, 5]]])
 
     def test_nested_parens_plus(self):
@@ -161,7 +160,7 @@ class MultiLineParserTests(ParserTestCase):
         """
         self.assertParsesTo(code, [
             ["set", "my-plus", ["λ", ["a", "b"],
-                 ["add", "a", "b"]]],
+                                ["add", "a", "b"]]],
             ["my-plus", 2, ["add", 3, 5]]])
 
     def test_operator_before_colon(self):
@@ -171,4 +170,4 @@ class MultiLineParserTests(ParserTestCase):
         """
         self.assertParsesTo(code, [
             ["if", ["equal?", "x", "y"],
-                 ["add", "x", "y"]]])
+             ["add", "x", "y"]]])

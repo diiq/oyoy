@@ -13,6 +13,7 @@ class Reader(object):
             stream.set_index(i)
             return False
 
+
 class SingleCharacterReader(Reader):
     def __init__(self, characters):
         self.characters = characters

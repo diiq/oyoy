@@ -30,7 +30,7 @@ class Stream(object):
 
         self.track_position()
         ret = self.string[self.index]
-        self.index +=1
+        self.index += 1
 
         return ret
 

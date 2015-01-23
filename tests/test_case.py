@@ -1,7 +1,5 @@
 from unittest import TestCase as TC
-from cStringIO import StringIO
 from textwrap import dedent
-from pprint import pformat
 
 from interpreter.interpreter import eval, Frame, Instruction
 from interpreter.environment import Env
@@ -9,6 +7,7 @@ from interpreter.code_objects import *
 from interpreter.globals import populate_globals
 from oyster.oyster_parser import OysterParser
 from oyster.oyster_scanner import OysterScanner
+
 
 class TestCase(TC):
     def setUp(self):

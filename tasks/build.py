@@ -1,5 +1,6 @@
 from fabric.api import local, hide, task
 
+
 @task
 def build():
     """Compiles the project using PyPy's RPython."""

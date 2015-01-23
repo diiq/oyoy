@@ -6,6 +6,7 @@ from pprint import pformat
 from oyster.oyster_scanner import *
 from lib.parsing.stream import Stream
 
+
 class ScannerTests(TestCase):
     def assertMatch(self, reader, string):
         stream = Stream(string)
@@ -41,7 +42,7 @@ class ScannerTests(TestCase):
             raise AssertionError(
                 "Scan failed to match:\n%s" % pformat(pairs, 4))
 
-    def test_symbol(self):
+    def test_lone_symbol(self):
         code = """
         a-symbol
         """
@@ -49,7 +50,7 @@ class ScannerTests(TestCase):
 
         self.assertScansTo(code, expected)
 
-    def test_number(self):
+    def test_lone_number(self):
         code = """
         242
         """

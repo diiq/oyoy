@@ -147,8 +147,7 @@ class ParenOperator(PrefixOperator):
 
     def parse(self, token, right, parser):
         within = parser.expression(self.precedence)
-        right.next()
-        # Todo assertion
+        right.next()  # Todo assert
 
         within = enforce_list(within)
 
@@ -213,9 +212,9 @@ class ColondentOperator(InfixOperator):
         self.precedence = precedence
 
     def parse(self, left, token, right, parser):
-        right.next() # Todo assert
+        right.next()  # Todo assert
         right_side = parser.expression(self.precedence)
-        right.next() # Todo assert
+        right.next()  # Todo assert
 
         # ensure both are lists
         left = ensure_partial_list(left)

@@ -6,11 +6,12 @@ from interpreter.interpreter import eval, Frame, Instruction
 from interpreter.globals import populate_globals
 from interpreter.environment import Env
 
+
 def run_string(string):
     tokens = OysterScanner(string).tokenize()
     statements = OysterParser().parse(tokens)
     instructions = [Instruction(Instruction.CODE, statement)
-                        for statement in OysterParser().parse(tokens).items]
+                    for statement in statements.items]
     instructions.reverse()
     env = populate_globals(Env(None, None))
     stack = [Frame(instructions, env)]
@@ -31,6 +32,7 @@ def run(fp):
     os.close(fp)
     run_string(program_contents)
 
+
 def entry_point(argv):
     try:
         filename = argv[1]
@@ -41,8 +43,10 @@ def entry_point(argv):
     run(os.open(filename, os.O_RDONLY, 0777))
     return 0
 
+
 def target(*args):
     return entry_point, None
+
 
 if __name__ == "__main__":
     entry_point(sys.argv)

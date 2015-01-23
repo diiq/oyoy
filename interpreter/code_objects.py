@@ -57,24 +57,30 @@ class List(OyO):
 ##################################################################
 # The following classes and constructors used during parsing only:
 
+
 class PartialList(List):
     pass
+
 
 def make_number(str):
     return Number(int(str, 10))
 
+
 def make_symbol(str):
     return Symbol(str)
+
 
 def close_partial_lists(obj):
     if isinstance(obj, PartialList):
         return List(obj.items)
     return obj
 
+
 def ensure_partial_list(obj):
     if not isinstance(obj, PartialList):
         return PartialList([obj])
     return obj
+
 
 def enforce_list(obj):
     if isinstance(obj, PartialList):

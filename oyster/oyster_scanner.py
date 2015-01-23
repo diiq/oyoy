@@ -48,7 +48,6 @@ comment_tokenizer = Tokenizer(comment, "")
 blank_line_tokenizer = Tokenizer(blank_line, "")
 
 
-
 ####################################
 # Scanner:
 #

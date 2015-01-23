@@ -5,6 +5,10 @@ from code_objects import *
 def populate_globals(env):
     # Builtin *functions* take an environment, rather than individual
     # args.
+
+    ##
+    # Add:
+    #
     def builtin_add(env):
         x = env.lookup("x").number
         y = env.lookup("y").number
@@ -15,21 +19,23 @@ def populate_globals(env):
 
     env.set("add", iplus)
 
+    ##
     # Lambda:
+    #
     def builtin_lambda(env):
         args = env.lookup("args")
         body = env.lookup("body")
         return Lambda(args.items, body, env.calling_environment)
 
     fn = Builtin(builtin_lambda,
-                    [List([Symbol("quote"), Symbol("args")]),
-                     List([Symbol("quote"), Symbol("body")])])
+                 [List([Symbol("quote"), Symbol("args")]),
+                  List([Symbol("quote"), Symbol("body")])])
     env.set("fn", fn)
     env.set("λ", fn)
 
-
-
-    # Lambda:
+    ##
+    # Set:
+    #
     def builtin_set(env):
         sym = env.lookup("symbol")
         val = env.lookup("value")
