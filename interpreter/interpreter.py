@@ -43,23 +43,19 @@ def eval(stack, current):
         return current
 
     elif instruction.type is Instruction.ARGUMENT:
-        print "Argument", instruction.symbol
         frame.new_env.set(instruction.symbol, current)
         return current
 
     elif instruction.type is Instruction.CALL:
-        print "Call", instruction.code
         eval_args(stack, current, instruction.code)
         return current
 
     elif instruction.type is Instruction.APPLY:
-        print "Apply", instruction.code
         ret = eval_apply(stack, instruction.code)
         return ret or current
 
     elif instruction.type is Instruction.CODE:
         code = instruction.code
-        print "CODE", code
 
         # Function call
         if isinstance(code, List):
@@ -112,7 +108,6 @@ def eval_apply(stack, function):
 
     if isinstance(function, Builtin):
         ret = function.function(frame.env)
-        print "RETURNED", ret
         return ret
 
     # if it's user-defined, execute the body

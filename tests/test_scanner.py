@@ -1,41 +1,71 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
-from cStringIO import StringIO
 from textwrap import dedent
 from pprint import pformat
 
-from parser.scanner import OysterScanner
+from oyster.oyster_scanner import *
+from lib.parsing.stream import Stream
 
 
 class ScannerTests(TestCase):
-    def assertScansTo(self, scanner, expected):
-        res = [t[0] for t in scanner.read_all()]
+    def assertMatch(self, reader, string):
+        stream = Stream(string)
+        assert reader.read(stream)
+
+    def assertNotMatch(self, reader, string):
+        stream = Stream(string)
+        assert not reader.read(stream)
+
+    def test_letter(self):
+        self.assertMatch(letter, "f")
+        self.assertNotMatch(letter, "?")
+
+    def test_digit(self):
+        self.assertMatch(digit, "5")
+        self.assertNotMatch(digit, "F")
+
+    def test_operator(self):
+        self.assertMatch(operator, "...")
+        self.assertMatch(operator, "== s")
+        self.assertNotMatch(operator, "FAQ")
+
+    def test_symbol(self):
+        self.assertMatch(symbol, "hello-there ")
+        self.assertMatch(symbol, "sw$en$y+toad ")
+        self.assertNotMatch(symbol, "?barf ")
+
+    def assertScansTo(self, code, expected):
+        scanner = OysterScanner(dedent(code))
+        res = [t.purpose for t in scanner.tokenize()]
         pairs = zip(expected, res)
         if not all([pair[0] == pair[1] for pair in pairs]):
             raise AssertionError(
                 "Scan failed to match:\n%s" % pformat(pairs, 4))
 
-    def test_symbol(self):
-        file = StringIO("a-symbol")
-        scanner = OysterScanner(file, "test_symbol")
+    def test_lone_symbol(self):
+        code = """
+        a-symbol
+        """
         expected = ["line", "symbol", "endline"]
 
-        self.assertScansTo(scanner, expected)
+        self.assertScansTo(code, expected)
 
-    def test_number(self):
-        file = StringIO("242")
-        scanner = OysterScanner(file, "test_number")
+    def test_lone_number(self):
+        code = """
+        242
+        """
         expected = ["line", "number", "endline"]
 
-        self.assertScansTo(scanner, expected)
+        self.assertScansTo(code, expected)
 
     def test_chain(self):
-        file = StringIO("(a-symbol 3 b)")
-        scanner = OysterScanner(file, "test_close")
+        code = """
+        (a-symbol 3 b)
+        """
         expected = ["line", "open", "symbol",
                     "number", "symbol", "close", "endline"]
 
-        self.assertScansTo(scanner, expected)
+        self.assertScansTo(code, expected)
 
     def test_indentation(self):
         code = """
@@ -43,14 +73,12 @@ class ScannerTests(TestCase):
             is
         sparta
         """
-        file = StringIO(dedent(code))
-        scanner = OysterScanner(file, "test_indentation")
         expected = ["line", "symbol", "colondent", "indent",
                     "line", "symbol", "endline",
                     "dedent", "endline",
                     "line", "symbol", "endline"]
 
-        self.assertScansTo(scanner, expected)
+        self.assertScansTo(code, expected)
 
     def test_parens_and_indentation(self):
         code = """
@@ -59,15 +87,13 @@ class ScannerTests(TestCase):
              mine) 5
         sparta
         """
-        file = StringIO(dedent(code))
-        scanner = OysterScanner(file, "test_parens_and_indentation")
         expected = ["line", "open", "symbol", "endline",
                     "line", "symbol", "colondent", "indent",
                     "line", "symbol", "dedent", "close",
                     "number", "endline",
                     "line", "symbol", "endline"]
 
-        self.assertScansTo(scanner, expected)
+        self.assertScansTo(code, expected)
 
     def test_plus_program(self):
         code = """
@@ -77,8 +103,6 @@ class ScannerTests(TestCase):
 
         my-plus 2 (3 + 5)
         """
-        file = StringIO(dedent(code))
-        scanner = OysterScanner(file, "test_plus")
         expected = ['line', 'symbol', 'symbol', 'colon',
                     'symbol', 'open', 'symbol', 'symbol', 'close',
                     'colondent', 'indent',
@@ -88,4 +112,4 @@ class ScannerTests(TestCase):
                     'open', 'number', '+', 'number', 'close',
                     'endline']
 
-        self.assertScansTo(scanner, expected)
+        self.assertScansTo(code, expected)

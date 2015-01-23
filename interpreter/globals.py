@@ -1,32 +1,41 @@
+# -*- coding: utf-8 -*-
 from code_objects import *
 
 
 def populate_globals(env):
     # Builtin *functions* take an environment, rather than individual
     # args.
-    def builtin_plus(env):
+
+    ##
+    # Add:
+    #
+    def builtin_add(env):
         x = env.lookup("x").number
         y = env.lookup("y").number
         return Number(x+y)
 
     # Builtin *objects* have arglists, though.
-    iplus = Builtin(builtin_plus, [Symbol("x"), Symbol("y")])
+    iplus = Builtin(builtin_add, [Symbol("x"), Symbol("y")])
 
-    env.set("plus", iplus)
+    env.set("add", iplus)
 
+    ##
     # Lambda:
+    #
     def builtin_lambda(env):
         args = env.lookup("args")
         body = env.lookup("body")
         return Lambda(args.items, body, env.calling_environment)
 
-    env.set("fn",
-            Builtin(builtin_lambda,
-                    [List([Symbol("quote"), Symbol("args")]),
-                     List([Symbol("quote"), Symbol("body")])]))
+    fn = Builtin(builtin_lambda,
+                 [List([Symbol("quote"), Symbol("args")]),
+                  List([Symbol("quote"), Symbol("body")])])
+    env.set("fn", fn)
+    env.set("λ", fn)
 
-
-    # Lambda:
+    ##
+    # Set:
+    #
     def builtin_set(env):
         sym = env.lookup("symbol")
         val = env.lookup("value")

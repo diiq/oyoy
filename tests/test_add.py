@@ -8,14 +8,14 @@ class AddTests(TestCase):
 
         make_lam = List([Symbol("fn"),
                          List([Symbol("a"), Symbol("b")]),
-                         List([Symbol("plus"),
+                         List([Symbol("add"),
                                Symbol("a"), Symbol("b")])])
 
         setter = List([Symbol("set"), Symbol("my-plus"), make_lam])
 
         testcode = List([Symbol("my-plus"),
                          Number(2),
-                         List([Symbol("plus"), Number(3), Number(5)])])
+                         List([Symbol("add"), Number(3), Number(5)])])
 
         ins = [Instruction(Instruction.CODE, testcode),
                Instruction(Instruction.CODE, setter)]
