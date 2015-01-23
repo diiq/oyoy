@@ -16,9 +16,10 @@ class TestCase(TC):
     def run_program(self, filename):
         with open(filename) as file:
             tokens = OysterScanner(file.read()).tokenize()
+        statements = OysterParser().parse(tokens).items
         instructions = [Instruction(Instruction.CODE, statement)
-                        for statement in OysterParser().parse(tokens).items]
-
+                        for statement in statements]
+        instructions.reverse()
         stack = [Frame(instructions, self.env)]
         cur = None
         while stack:
@@ -28,7 +29,7 @@ class TestCase(TC):
     def run_snippet(self, code):
         file = StringIO(dedent(code))
         tokens = OysterScanner(file, "snippet").read_all()
-        instructions = OysterParser.parse(tokens)
+        instructions = OysterParser.parse(tokens).items
         stack = [Frame(instructions, self.env)]
         cur = None
         while stack:

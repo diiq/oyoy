@@ -2,6 +2,10 @@ from interpreter.code_objects import *
 from oyster_scanner import Token
 
 
+class ParseError(StandardError):
+    pass
+
+
 class TokenStream(object):
     def __init__(self, tokens):
         self.tokens = tokens
@@ -53,7 +57,6 @@ class OysterParser(object):
 
             "&&": InfixOperator("and", 3),
             "||": InfixOperator("or", 2),
-
         }
 
         self.closers = ["close", "endline", "dedent"]
@@ -61,7 +64,6 @@ class OysterParser(object):
     def parse(self, tokens):
         self.right = TokenStream(tokens)
         ret = self.expression(-1)
-        # ENSURE LIST
         return enforce_list(ret)
 
     def expression(self, prev_precedence):
@@ -76,16 +78,22 @@ class OysterParser(object):
         return left
 
     def peek_or_null(self):
-        if self.right.peek().purpose in self.infixes:
-            return self.right.peek()
+        token = self.right.peek()
+        if token.purpose in self.infixes:
+            return token
         else:
-            return Token("null", '')
+            return Token("null", '',
+                         token.line,
+                         token.character)
 
     def next_or_null(self):
-        if self.right.peek().purpose in self.infixes:
+        token = self.right.peek()
+        if token.purpose in self.infixes:
             return self.right.next()
         else:
-            return Token("null", '')
+            return Token("null", '',
+                         token.line,
+                         token.character)
 
     def next_is_closing(self):
         return self.right.peek().purpose in self.closers
@@ -212,9 +220,19 @@ class ColondentOperator(InfixOperator):
         self.precedence = precedence
 
     def parse(self, left, token, right, parser):
-        right.next()  # Todo assert
+        indent = right.next()
+        if indent.purpose != "indent":
+            raise ParseError(
+                "Indentation expected: line %d, column %d" %
+                 (token.line, token.character))
+
         right_side = parser.expression(self.precedence)
-        right.next()  # Todo assert
+
+        dedent = right.next()
+        if dedent.purpose != "dedent":
+            raise ParseError(
+                "Dedentation expected: line %d, column %d." %
+                 (token.line, token.character))
 
         # ensure both are lists
         left = ensure_partial_list(left)

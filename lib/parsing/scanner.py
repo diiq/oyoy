@@ -4,9 +4,11 @@ DITTO = "DITTO"
 
 
 class Token(object):
-    def __init__(self, purpose, text):
+    def __init__(self, purpose, text, line, character):
         self.purpose = purpose
         self.text = text
+        self.line = line
+        self.character = character
 
     def __repr__(self):
         if self.text != "":
@@ -25,9 +27,13 @@ class Tokenizer(object):
     def token(self, stream, i, j):
         text = stream.string[i:j]
         if self.purpose == DITTO:
-            return Token(text, text)
+            return Token(text, text,
+                         stream.line(),
+                         stream.position())
         else:
-            return Token(self.purpose, text)
+            return Token(self.purpose, text,
+                         stream.line(),
+                         stream.position())
 
 
 class Scanner(object):

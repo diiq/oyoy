@@ -78,16 +78,29 @@ class OysterScanner(Scanner):
 
     def indent_to(self, new_level):
         self.indentation_stack.append(new_level)
-        self.produce(Token('indent', ''))
-        self.produce(Token('line', ''))
+        self.produce(Token('indent', '',
+                           self.stream.line(),
+                           self.stream.position()))
+        self.produce(Token('line', '',
+                           self.stream.line(),
+                           self.stream.position()))
 
     def dedent_to(self, new_level):
-        self.produce(Token('endline', ''))
+        self.produce(Token('endline', '',
+                           self.stream.line(),
+                           self.stream.position()))
+
         while new_level < self.current_indentation():
             self.indentation_stack.pop()
-            self.produce(Token('dedent', ''))
-            self.produce(Token('endline', ''))
-        self.produce(Token('line', ''))
+            self.produce(Token('dedent', '',
+                               self.stream.line(),
+                               self.stream.position()))
+            self.produce(Token('endline', '',
+                               self.stream.line(),
+                               self.stream.position()))
+        self.produce(Token('line', '',
+                           self.stream.line(),
+                           self.stream.position()))
 
     def eof(self):
         self.dedent_to(0)
@@ -106,8 +119,12 @@ class OysterScanner(Scanner):
         elif new_indentation < current_indentation:
             self.dedent_to(new_indentation)
         else:
-            self.produce(Token('endline', ''))
-            self.produce(Token('line', ''))
+            self.produce(Token('endline', '',
+                               self.stream.line(),
+                               self.stream.position()))
+            self.produce(Token('line', '',
+                               self.stream.line(),
+                               self.stream.position()))
 
         self.state = self.default_state
 
@@ -121,7 +138,9 @@ class OysterScanner(Scanner):
         ind = self.paren_stack.pop() or 0
 
         while len(self.indentation_stack) > ind:
-            self.produce(Token('dedent', ''))
+            self.produce(Token('dedent', '',
+                               self.stream.line(),
+                               self.stream.position()))
             self.indentation_stack.pop()
         self.indentation_stack.pop()
 
@@ -132,7 +151,9 @@ class OysterScanner(Scanner):
 
     def colondent_action(self, token):
         self.state = self.new_line_state
-        self.produce(Token("colondent", ""))
+        self.produce(Token('colondent', '',
+                           self.stream.line(),
+                           self.stream.position()))
 
     def operator_action(self, token):
         self.produce(token)
