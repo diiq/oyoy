@@ -1,5 +1,6 @@
 from oyster_object import OysterObject
 
+
 class Number(OysterObject):
     def __init__(self, value):
         self.number = value

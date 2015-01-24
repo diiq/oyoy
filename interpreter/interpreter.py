@@ -6,7 +6,6 @@ from number import Number
 from builtin import Builtin
 from oyster_lambda import Lambda
 from stack_frame import StackFrame
-from instruction import Instruction
 
 
 FAIL = Symbol("Fail")

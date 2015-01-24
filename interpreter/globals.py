@@ -6,7 +6,6 @@ from builtin import Builtin
 from oyster_lambda import Lambda
 
 
-
 def populate_globals(env):
     # Builtin *functions* take an environment, rather than individual
     # args.

@@ -1,5 +1,6 @@
 from oyster_object import OysterObject
 
+
 class Symbol(OysterObject):
     code = False
 

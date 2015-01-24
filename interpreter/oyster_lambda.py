@@ -1,4 +1,6 @@
 from oyster_object import OysterObject
+from list import List
+from symbol import Symbol
 
 
 class Lambda(OysterObject):
@@ -27,17 +29,18 @@ class Argument(object):
             self.set_prefix(self.function_list)
 
         else:
-            set_argument_name(self, clause)
+            self.set_argument_name(self, clause)
 
     def set_argument_name(self, symbol):
         if not isinstance(symbol, Symbol):
             raise StandardError("Bad argument name")
-        self.argument_name = argument_symbol.value
+        self.argument_name = symbol.value
 
     def set_prefix(self, function_list):
         function = function_list[0]
-        if (isinstance(function, Symbol) and
-            function.value in ["quote", "enclose", "ellipse"]):
+        if isinstance(function, Symbol) and \
+           function.value in ["quote", "enclose", "ellipse"]:
+
             self.prefix = function.value
 
     def build_instruction(self, code):

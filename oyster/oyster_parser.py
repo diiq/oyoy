@@ -1,9 +1,7 @@
 from interpreter import list
 from interpreter.list import List, PartialList
 from interpreter.symbol import Symbol, make_symbol
-from interpreter.number import Number, make_number
-from interpreter.builtin import Builtin
-from interpreter.oyster_lambda import Lambda
+from interpreter.number import make_number
 from oyster_scanner import Token
 
 
@@ -229,7 +227,7 @@ class ColondentOperator(InfixOperator):
         if indent.purpose != "indent":
             raise ParseError(
                 "Indentation expected: line %d, column %d" %
-                 (token.line, token.character))
+                (token.line, token.character))
 
         right_side = parser.expression(self.precedence)
 
@@ -237,7 +235,7 @@ class ColondentOperator(InfixOperator):
         if dedent.purpose != "dedent":
             raise ParseError(
                 "Dedentation expected: line %d, column %d." %
-                 (token.line, token.character))
+                (token.line, token.character))
 
         # ensure both are lists
         left = list.ensure_partial_list(left)

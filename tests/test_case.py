@@ -8,8 +8,6 @@ from interpreter.environment import Env
 from interpreter.list import List, PartialList
 from interpreter.symbol import Symbol
 from interpreter.number import Number
-from interpreter.builtin import Builtin
-from interpreter.oyster_lambda import Lambda
 from interpreter.globals import populate_globals
 from oyster.oyster_parser import OysterParser
 from oyster.oyster_scanner import OysterScanner
@@ -33,8 +31,7 @@ class TestCase(TC):
         return cur
 
     def run_snippet(self, code):
-        file = StringIO(dedent(code))
-        tokens = OysterScanner(file, "snippet").read_all()
+        tokens = OysterScanner(dedent(code)).read_all()
         instructions = OysterParser.parse(tokens).items
         stack = [StackFrame(instructions, self.env)]
         cur = None

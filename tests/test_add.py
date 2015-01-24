@@ -2,8 +2,6 @@ from test_case import TestCase
 from interpreter.list import List
 from interpreter.symbol import Symbol
 from interpreter.number import Number
-from interpreter.builtin import Builtin
-from interpreter.oyster_lambda import Lambda
 from interpreter.interpreter import Instruction
 
 

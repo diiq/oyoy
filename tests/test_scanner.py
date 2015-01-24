@@ -3,7 +3,8 @@ from unittest import TestCase
 from textwrap import dedent
 from pprint import pformat
 
-from oyster.oyster_scanner import *
+from oyster.oyster_scanner import (letter, digit, operator,
+                                   symbol, OysterScanner)
 from lib.parsing.stream import Stream
 
 
