@@ -1,4 +1,9 @@
-from interpreter.code_objects import *
+from interpreter import list
+from interpreter.list import List, PartialList
+from interpreter.symbol import Symbol, make_symbol
+from interpreter.number import Number, make_number
+from interpreter.builtin import Builtin
+from interpreter.oyster_lambda import Lambda
 from oyster_scanner import Token
 
 
@@ -64,7 +69,7 @@ class OysterParser(object):
     def parse(self, tokens):
         self.right = TokenStream(tokens)
         ret = self.expression(-1)
-        return enforce_list(ret)
+        return list.enforce_list(ret)
 
     def expression(self, prev_precedence):
         left = self.build_left(self.right.next())
@@ -133,7 +138,7 @@ class PrefixOperator(object):
 
     def parse(self, token, right, parser):
         within = parser.expression(self.precedence)
-        within = close_partial_lists(within)
+        within = list.close_partial_lists(within)
         return List([self.representation(), within])
 
 
@@ -146,7 +151,7 @@ class NewlineOperator(PrefixOperator):
         if right.peek().purpose == "endline":
             right.next()
 
-        return close_partial_lists(within)
+        return list.close_partial_lists(within)
 
 
 class ParenOperator(PrefixOperator):
@@ -157,7 +162,7 @@ class ParenOperator(PrefixOperator):
         within = parser.expression(self.precedence)
         right.next()  # Todo assert
 
-        within = enforce_list(within)
+        within = list.enforce_list(within)
 
         return within
 
@@ -177,7 +182,7 @@ class ColonOperator(PrefixOperator):
 
     def parse(self, token, right, parser):
         within = parser.expression(self.precedence)
-        within = close_partial_lists(within)
+        within = list.close_partial_lists(within)
 
         return PartialList([within])
 
@@ -198,8 +203,8 @@ class InfixOperator(object):
         right_side = parser.expression(self.precedence)
 
         return PartialList([self.representation(),
-                            close_partial_lists(left),
-                            close_partial_lists(right_side)])
+                            list.close_partial_lists(left),
+                            list.close_partial_lists(right_side)])
 
 
 class NullInfix(InfixOperator):
@@ -209,8 +214,8 @@ class NullInfix(InfixOperator):
     def parse(self, left, token, right, parser):
         right_side = parser.expression(self.precedence)
 
-        left = ensure_partial_list(left)
-        right_side = ensure_partial_list(right_side)
+        left = list.ensure_partial_list(left)
+        right_side = list.ensure_partial_list(right_side)
 
         return PartialList(left.items + right_side.items)
 
@@ -235,7 +240,7 @@ class ColondentOperator(InfixOperator):
                  (token.line, token.character))
 
         # ensure both are lists
-        left = ensure_partial_list(left)
-        right_side = ensure_partial_list(right_side)
+        left = list.ensure_partial_list(left)
+        right_side = list.ensure_partial_list(right_side)
 
         return PartialList(left.items + right_side.items)

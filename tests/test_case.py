@@ -3,7 +3,11 @@ from textwrap import dedent
 
 from interpreter.interpreter import eval, Frame, Instruction
 from interpreter.environment import Env
-from interpreter.code_objects import *
+from interpreter.list import List, PartialList
+from interpreter.symbol import Symbol
+from interpreter.number import Number
+from interpreter.builtin import Builtin
+from interpreter.oyster_lambda import Lambda
 from interpreter.globals import populate_globals
 from oyster.oyster_parser import OysterParser
 from oyster.oyster_scanner import OysterScanner

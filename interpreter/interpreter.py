@@ -1,12 +1,13 @@
 from environment import Env
-from code_objects import *
-
-
-Log = []
+from list import List
+from symbol import Symbol
+from number import Number
+from builtin import Builtin
+from oyster_lambda import Lambda
 
 
 class Instruction():
-    ARGUMENT, CODE, CALL, APPLY = range(4)
+    ARGUMENT, CODE, CALL, APPLY, LITERAL = range(5)
 
     def __init__(self, typ, code=None, args=None, symbol=""):
         self.type = typ
@@ -57,6 +58,12 @@ def eval(stack, current):
     elif instruction.type is Instruction.CODE:
         code = instruction.code
 
+        if code.env:
+            stack.append(Frame(
+                [Instruction(Instruction.CODE, code=code.dup())],
+                code.env))
+            return current
+
         # Function call
         if isinstance(code, List):
             return eval_fn(stack, code)
@@ -68,7 +75,6 @@ def eval(stack, current):
 
         # Symbol
         elif isinstance(code, Symbol):
-            Log.append(frame)
             return frame.env.lookup(code.symbol)
 
     return FAIL
