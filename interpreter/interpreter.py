@@ -1,34 +1,12 @@
 from environment import Env
+from instruction import Instruction
 from list import List
 from symbol import Symbol
 from number import Number
 from builtin import Builtin
 from oyster_lambda import Lambda
-
-
-class Instruction():
-    ARGUMENT, CODE, CALL, APPLY, LITERAL = range(5)
-
-    def __init__(self, typ, code=None, args=None, symbol=""):
-        self.type = typ
-        self.code = code
-        self.symbol = symbol
-        self.args = args
-
-
-class Frame():
-    def __init__(self, instructions, env):
-        self.instructions = instructions
-        self.env = env
-        self.new_env = None
-
-    def next(self):
-        if self.instructions == []:
-            return None
-        return self.instructions.pop()
-
-    def push(self, instruction):
-        self.instructions.append(instruction)
+from stack_frame import StackFrame
+from instruction import Instruction
 
 
 FAIL = Symbol("Fail")
@@ -59,7 +37,7 @@ def eval(stack, current):
         code = instruction.code
 
         if code.env:
-            stack.append(Frame(
+            stack.append(StackFrame(
                 [Instruction(Instruction.CODE, code=code.dup())],
                 code.env))
             return current
@@ -90,7 +68,7 @@ def eval_args(stack, function, code):
     # Evaluate arguments
     args = code.args
 
-    frame = Frame([], stack[-1].env)
+    frame = StackFrame([], stack[-1].env)
     stack.append(frame)
     frame.new_env = Env(function.bindings, frame.env)
 

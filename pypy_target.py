@@ -2,7 +2,9 @@ import sys
 import os
 from oyster.oyster_scanner import OysterScanner
 from oyster.oyster_parser import OysterParser
-from interpreter.interpreter import eval, Frame, Instruction
+from interpreter.interpreter import eval
+from interpreter.frame import StackFrame
+from interpreter.instruction import Instruction
 from interpreter.globals import populate_globals
 from interpreter.environment import Env
 
@@ -14,7 +16,7 @@ def run_string(string):
                     for statement in statements.items]
     instructions.reverse()
     env = populate_globals(Env(None, None))
-    stack = [Frame(instructions, env)]
+    stack = [StackFrame(instructions, env)]
     cur = None
     while stack:
         cur = eval(stack, cur)

@@ -1,7 +1,9 @@
 from unittest import TestCase as TC
 from textwrap import dedent
 
-from interpreter.interpreter import eval, Frame, Instruction
+from interpreter.interpreter import eval
+from interpreter.stack_frame import StackFrame
+from interpreter.instruction import Instruction
 from interpreter.environment import Env
 from interpreter.list import List, PartialList
 from interpreter.symbol import Symbol
@@ -24,7 +26,7 @@ class TestCase(TC):
         instructions = [Instruction(Instruction.CODE, statement)
                         for statement in statements]
         instructions.reverse()
-        stack = [Frame(instructions, self.env)]
+        stack = [StackFrame(instructions, self.env)]
         cur = None
         while stack:
             cur = eval(stack, cur)
@@ -34,14 +36,14 @@ class TestCase(TC):
         file = StringIO(dedent(code))
         tokens = OysterScanner(file, "snippet").read_all()
         instructions = OysterParser.parse(tokens).items
-        stack = [Frame(instructions, self.env)]
+        stack = [StackFrame(instructions, self.env)]
         cur = None
         while stack:
             cur = eval(stack, cur)
         return cur
 
     def run_parsed_code(self, code):
-        stack = [Frame(code, self.env)]
+        stack = [StackFrame(code, self.env)]
         cur = None
         while stack:
             cur = eval(stack, cur)
