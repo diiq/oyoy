@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-from code_objects import *
+from list import List
+from symbol import Symbol
+from number import Number
+from builtin import Builtin
+from oyster_lambda import Lambda
 
 
 def populate_globals(env):

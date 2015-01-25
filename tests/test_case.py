@@ -1,10 +1,14 @@
 from unittest import TestCase as TC
 from textwrap import dedent
 
-from interpreter.interpreter import eval, Frame, Instruction
-from interpreter.environment import Env
-from interpreter.code_objects import *
-from interpreter.globals import populate_globals
+from oyster.interpreter import eval
+from oyster.stack_frame import StackFrame
+from oyster.instruction import Instruction
+from oyster.environment import Env
+from oyster.list import List, PartialList
+from oyster.symbol import Symbol
+from oyster.number import Number
+from oyster.globals import populate_globals
 from oyster.oyster_parser import OysterParser
 from oyster.oyster_scanner import OysterScanner
 
@@ -20,24 +24,23 @@ class TestCase(TC):
         instructions = [Instruction(Instruction.CODE, statement)
                         for statement in statements]
         instructions.reverse()
-        stack = [Frame(instructions, self.env)]
+        stack = [StackFrame(instructions, self.env)]
         cur = None
         while stack:
             cur = eval(stack, cur)
         return cur
 
     def run_snippet(self, code):
-        file = StringIO(dedent(code))
-        tokens = OysterScanner(file, "snippet").read_all()
+        tokens = OysterScanner(dedent(code)).read_all()
         instructions = OysterParser.parse(tokens).items
-        stack = [Frame(instructions, self.env)]
+        stack = [StackFrame(instructions, self.env)]
         cur = None
         while stack:
             cur = eval(stack, cur)
         return cur
 
     def run_parsed_code(self, code):
-        stack = [Frame(code, self.env)]
+        stack = [StackFrame(code, self.env)]
         cur = None
         while stack:
             cur = eval(stack, cur)

@@ -1,4 +1,7 @@
-from interpreter.code_objects import *
+import list
+from list import List, PartialList
+from symbol import Symbol, make_symbol
+from number import make_number
 from oyster_scanner import Token
 
 
@@ -64,7 +67,7 @@ class OysterParser(object):
     def parse(self, tokens):
         self.right = TokenStream(tokens)
         ret = self.expression(-1)
-        return enforce_list(ret)
+        return list.enforce_list(ret)
 
     def expression(self, prev_precedence):
         left = self.build_left(self.right.next())
@@ -105,15 +108,22 @@ class OysterParser(object):
             return -1
 
     def build_left(self, token):
-        assert token.purpose in self.prefixes, \
-            "%s is not a prefix operator" % token.purpose
+        if token.purpose not in self.prefixes:
+            print self.right.next(),  self.right.next(),  self.right.next()
+            raise ParseError("%s is not an prefix operator."
+                             "Line %s, char %s" % (
+                                 token.purpose,
+                                 token.line,
+                                 token.character))
+
 
         operator = self.prefixes[token.purpose]
         return operator.parse(token, self.right, self)
 
     def fill_right(self, left, token):
         assert token.purpose in self.infixes, \
-            "%s is not an infix operator" % token.purpose
+            "%s is not an infix operator. Line %s, char %s" % (
+                token.purpose, token.line, token.character)
 
         operator = self.infixes[token.purpose]
         return operator.parse(left, token, self.right, self)
@@ -133,7 +143,7 @@ class PrefixOperator(object):
 
     def parse(self, token, right, parser):
         within = parser.expression(self.precedence)
-        within = close_partial_lists(within)
+        within = list.close_partial_lists(within)
         return List([self.representation(), within])
 
 
@@ -146,7 +156,7 @@ class NewlineOperator(PrefixOperator):
         if right.peek().purpose == "endline":
             right.next()
 
-        return close_partial_lists(within)
+        return list.close_partial_lists(within)
 
 
 class ParenOperator(PrefixOperator):
@@ -157,7 +167,7 @@ class ParenOperator(PrefixOperator):
         within = parser.expression(self.precedence)
         right.next()  # Todo assert
 
-        within = enforce_list(within)
+        within = list.enforce_list(within)
 
         return within
 
@@ -177,7 +187,7 @@ class ColonOperator(PrefixOperator):
 
     def parse(self, token, right, parser):
         within = parser.expression(self.precedence)
-        within = close_partial_lists(within)
+        within = list.close_partial_lists(within)
 
         return PartialList([within])
 
@@ -198,8 +208,8 @@ class InfixOperator(object):
         right_side = parser.expression(self.precedence)
 
         return PartialList([self.representation(),
-                            close_partial_lists(left),
-                            close_partial_lists(right_side)])
+                            list.close_partial_lists(left),
+                            list.close_partial_lists(right_side)])
 
 
 class NullInfix(InfixOperator):
@@ -209,8 +219,8 @@ class NullInfix(InfixOperator):
     def parse(self, left, token, right, parser):
         right_side = parser.expression(self.precedence)
 
-        left = ensure_partial_list(left)
-        right_side = ensure_partial_list(right_side)
+        left = list.ensure_partial_list(left)
+        right_side = list.ensure_partial_list(right_side)
 
         return PartialList(left.items + right_side.items)
 
@@ -224,7 +234,7 @@ class ColondentOperator(InfixOperator):
         if indent.purpose != "indent":
             raise ParseError(
                 "Indentation expected: line %d, column %d" %
-                 (token.line, token.character))
+                (token.line, token.character))
 
         right_side = parser.expression(self.precedence)
 
@@ -232,10 +242,10 @@ class ColondentOperator(InfixOperator):
         if dedent.purpose != "dedent":
             raise ParseError(
                 "Dedentation expected: line %d, column %d." %
-                 (token.line, token.character))
+                (token.line, token.character))
 
         # ensure both are lists
-        left = ensure_partial_list(left)
-        right_side = ensure_partial_list(right_side)
+        left = list.ensure_partial_list(left)
+        right_side = list.ensure_partial_list(right_side)
 
         return PartialList(left.items + right_side.items)

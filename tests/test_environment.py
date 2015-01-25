@@ -1,5 +1,5 @@
 from test_case import TestCase
-from interpreter.environment import Env
+from oyster.environment import Env
 
 
 class EnvironmentTests(TestCase):

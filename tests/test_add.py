@@ -1,10 +1,12 @@
 from test_case import TestCase
-from interpreter.code_objects import *
-from interpreter.interpreter import Instruction
+from oyster.list import List
+from oyster.symbol import Symbol
+from oyster.number import Number
+from oyster.interpreter import Instruction
 
 
 class AddTests(TestCase):
-    def test_add(self):
+    def xtest_add(self):
 
         make_lam = List([Symbol("fn"),
                          List([Symbol("a"), Symbol("b")]),
@@ -24,7 +26,7 @@ class AddTests(TestCase):
         self.assertIsInstance(result, Number)
         self.assertEqual(result.number, 10)
 
-    def test_add_from_file(self):
+    def xtest_add_from_file(self):
         result = self.run_program("oyster_code/test_add.oy")
 
         self.assertIsInstance(result, Number)
