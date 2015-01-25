@@ -2,11 +2,11 @@ import sys
 import os
 from oyster.oyster_scanner import OysterScanner
 from oyster.oyster_parser import OysterParser
-from interpreter.interpreter import eval
-from interpreter.frame import StackFrame
-from interpreter.instruction import Instruction
-from interpreter.globals import populate_globals
-from interpreter.environment import Env
+from oyster.interpreter import eval
+from oyster.stack_frame import StackFrame
+from oyster.instruction import Instruction
+from oyster.globals import populate_globals
+from oyster.environment import Env
 
 
 def run_string(string):

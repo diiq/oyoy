@@ -1,7 +1,7 @@
-from interpreter import list
-from interpreter.list import List, PartialList
-from interpreter.symbol import Symbol, make_symbol
-from interpreter.number import make_number
+import list
+from list import List, PartialList
+from symbol import Symbol, make_symbol
+from number import make_number
 from oyster_scanner import Token
 
 
@@ -108,15 +108,22 @@ class OysterParser(object):
             return -1
 
     def build_left(self, token):
-        assert token.purpose in self.prefixes, \
-            "%s is not a prefix operator" % token.purpose
+        if token.purpose not in self.prefixes:
+            print self.right.next(),  self.right.next(),  self.right.next()
+            raise ParseError("%s is not an prefix operator."
+                             "Line %s, char %s" % (
+                                 token.purpose,
+                                 token.line,
+                                 token.character))
+
 
         operator = self.prefixes[token.purpose]
         return operator.parse(token, self.right, self)
 
     def fill_right(self, left, token):
         assert token.purpose in self.infixes, \
-            "%s is not an infix operator" % token.purpose
+            "%s is not an infix operator. Line %s, char %s" % (
+                token.purpose, token.line, token.character)
 
         operator = self.infixes[token.purpose]
         return operator.parse(left, token, self.right, self)

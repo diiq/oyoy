@@ -1,0 +1,52 @@
+sqrt-iter = λ|guess x| →
+    if (good-enough? guess x) ->
+        guess
+        sqrt-iter (improve guess x) x
+    else ->
+        something else
+
+average = λ|x y| ->
+    (x + y) / 2
+
+improve = λ|guess x| ->
+    average guess (x / guess)
+
+good-enough? = λ|guess x| ⇒
+    abs (square guess - x) < 0.001
+
+sqrt = λx ->
+    sqrt-iter 1 x
+
+
+factorial = λn ->
+    iter = λ(product counter) ->
+        if (counter > n) ->
+            signal product
+            iter:
+                counter * product
+                counter + 1
+    iter 1 1
+
+
+count-change = λamount ->
+    cc = λ(amount kinds-of-coins) ->
+        #print 'amount amount 'kinds kinds-of-coins
+        cond:
+            (amount == 0) 1
+            (or:
+                amount < 0
+                kinds-of-coins == 0) 0
+            't -> add:
+                cc amount (kinds-of-coins - 1)
+                cc:
+                    amount - first-denomination kinds-of-coins
+                    kinds-of-coins
+
+    first-denomination = λkinds-of-coins ↦ cond:
+        (kinds-of-coins == 1) 1
+        (kinds-of-coins == 2) 5
+        (kinds-of-coins == 3) 10
+        (kinds-of-coins == 4) 25
+        (kinds-of-coins == 5) 50
+
+    cc amount 5

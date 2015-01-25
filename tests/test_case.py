@@ -1,14 +1,14 @@
 from unittest import TestCase as TC
 from textwrap import dedent
 
-from interpreter.interpreter import eval
-from interpreter.stack_frame import StackFrame
-from interpreter.instruction import Instruction
-from interpreter.environment import Env
-from interpreter.list import List, PartialList
-from interpreter.symbol import Symbol
-from interpreter.number import Number
-from interpreter.globals import populate_globals
+from oyster.interpreter import eval
+from oyster.stack_frame import StackFrame
+from oyster.instruction import Instruction
+from oyster.environment import Env
+from oyster.list import List, PartialList
+from oyster.symbol import Symbol
+from oyster.number import Number
+from oyster.globals import populate_globals
 from oyster.oyster_parser import OysterParser
 from oyster.oyster_scanner import OysterScanner
 
